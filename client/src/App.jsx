@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import DailyChecklist from './components/DailyChecklist';
 import ThisWeek from './components/ThisWeek';
+import Recurring from './components/Recurring';
 import Goals from './components/Goals';
 import './index.css';
 
@@ -30,6 +31,7 @@ function useApi(path) {
 export default function App() {
   const daily = useApi('/api/daily');
   const week = useApi('/api/week');
+  const recurring = useApi('/api/recurring');
   const goals = useApi('/api/goals');
 
   return (
@@ -43,6 +45,7 @@ export default function App() {
       <main>
         <DailyChecklist {...daily} />
         <ThisWeek {...week} />
+        <Recurring {...recurring} />
         <Goals {...goals} focusIds={FOCUS_IDS} />
       </main>
     </>
