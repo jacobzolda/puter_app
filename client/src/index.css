@@ -1,0 +1,236 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --accent: #4a7c59;
+  --text: #1a1a1a;
+  --text-secondary: #555;
+  --text-muted: #888;
+  --bg: #f7f7f5;
+  --surface: #ffffff;
+  --border: #e2e2de;
+  --focus-badge: #4a7c59;
+  --focus-badge-text: #ffffff;
+  --checked: #aaa;
+  --font: system-ui, 'Segoe UI', sans-serif;
+  --mono: ui-monospace, Consolas, monospace;
+}
+
+html { font-size: 16px; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+#root {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+/* Header */
+.app-header {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 0.75rem;
+}
+
+.app-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.app-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.readonly-badge {
+  margin-left: auto;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+/* Section cards */
+.section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.section-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 1.25rem;
+}
+
+/* Subsections (daily checklist groups) */
+.subsection { margin-bottom: 1.25rem; }
+.subsection:last-child { margin-bottom: 0; }
+
+.subsection-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.subsection-note {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-top: 0.4rem;
+  padding-left: 0.6rem;
+  border-left: 2px solid var(--border);
+}
+
+/* Checklist items */
+.checklist { list-style: none; }
+
+.checklist-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.25rem 0;
+  font-size: 0.925rem;
+}
+
+.checklist-item input[type="checkbox"] {
+  margin-top: 0.25rem;
+  flex-shrink: 0;
+  accent-color: var(--accent);
+  cursor: default;
+  pointer-events: none;
+  width: 14px;
+  height: 14px;
+}
+
+.checklist-item.is-checked .item-text {
+  color: var(--checked);
+  text-decoration: line-through;
+}
+
+/* Week section */
+.week-of {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.week-of span {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* Goals */
+.tier-group { margin-bottom: 1.5rem; }
+.tier-group:last-child { margin-bottom: 0; }
+
+.tier-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.3rem;
+  margin-bottom: 0.75rem;
+}
+
+.goal-card {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.goal-card:last-child { border-bottom: none; }
+
+.goal-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.goal-id {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--surface);
+  background: var(--text-muted);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+}
+
+.goal-id.is-focus { background: var(--focus-badge); }
+
+.goal-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.focus-marker {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--focus-badge);
+  border: 1px solid var(--focus-badge);
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+}
+
+.goal-body {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+/* Empty / loading / warning states */
+.state-loading,
+.state-empty {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.state-warning {
+  font-size: 0.78rem;
+  color: #7a5000;
+  background: #fef9ec;
+  border: 1px solid #e8d280;
+  border-radius: 4px;
+  padding: 0.4rem 0.65rem;
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 600px) {
+  #root { padding: 1rem 1rem 3rem; }
+  .section { padding: 1.1rem; }
+}
