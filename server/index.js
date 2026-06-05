@@ -17,6 +17,7 @@ if (!PUTER_DIR) {
 }
 
 const PUTER_MD = path.join(PUTER_DIR, 'PUTER.md');
+const BUILD_LOG_MD = path.join(PUTER_DIR, 'PUTER_APP_BUILD_LOG.md');
 
 // Simple per-request parse (no caching needed in Phase 1 — files are small)
 function getParsed() {
@@ -28,12 +29,12 @@ app.use(express.json());
 
 // GET /api/health
 app.get('/api/health', (req, res) => {
-  const puterMdFound = fs.existsSync(PUTER_MD);
   const parsed = getParsed();
   res.json({
     ok: true,
     files: {
-      'PUTER.md': { found: puterMdFound, path: PUTER_MD, lastRead: parsed.lastRead },
+      'PUTER.md': { found: fs.existsSync(PUTER_MD), path: PUTER_MD, lastRead: parsed.lastRead },
+      'PUTER_APP_BUILD_LOG.md': { found: fs.existsSync(BUILD_LOG_MD), path: BUILD_LOG_MD },
     },
     warnings: parsed.warnings,
   });
