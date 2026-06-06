@@ -28,7 +28,7 @@ Copy `.env.example` to `.env` and set `PUTER_DIR`:
 
 ```env
 PUTER_DIR=C:\Users\jakez\OneDrive\PUTER
-PORT=4173        # optional — defaults to 4173
+PORT=3001        # optional — defaults to 3001
 ```
 
 `.env` is git-ignored and never committed.
