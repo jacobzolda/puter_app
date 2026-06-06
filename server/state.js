@@ -67,4 +67,12 @@ function setHidden(id, value) {
   return state;
 }
 
-module.exports = { readState, setChecked, setHidden, logicalDay };
+function removeIdFromState(id) {
+  const state = readState();
+  state.checked = state.checked.filter(x => x !== id);
+  state.hidden = state.hidden.filter(x => x !== id);
+  writeState(state);
+  return state;
+}
+
+module.exports = { readState, setChecked, setHidden, removeIdFromState, logicalDay };

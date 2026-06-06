@@ -1,4 +1,4 @@
-# P.U.T.E.R. App — v0.3.0
+# P.U.T.E.R. App — v0.3.1
 
 **P**ersonal **U**tility **T**o **E**nhance **R**elaxation — local dashboard for Jacob Zolda's life-management system, installable as a PWA on the phone.
 
@@ -85,9 +85,8 @@ A self-signed cert (mkcert, path 2) would unlock the full install badge and true
 
 ## Security note — 0.0.0.0 binding
 
-`npm run serve` binds to **all network interfaces** (`0.0.0.0`). This is deliberate: the phone needs to reach the PC over home Wi-Fi. The source files (`PUTER.md`, OneDrive) are **never written by the app** — the only file the app writes is `server/state/daily-state.json` (local daily check/hide state). This posture is acceptable on a trusted home network. Revisit at:
+`npm run serve` binds to **all network interfaces** (`0.0.0.0`). This is deliberate: the phone needs to reach the PC over home Wi-Fi. As of v0.3.1 the app writes two paths: `server/state/daily-state.json` (daily check/hide state, local) and `PUTER.md` (Daily Checklist section only, via the structure-edit endpoints). Both writes follow strict guards (see `server/editor.js`). This posture is acceptable on a trusted home network. Revisit at:
 
-- **Phase 3.5** (PUTER.md structural edits — access control becomes more important)
 - **Phase 4** (always-on box — the box is reachable beyond home Wi-Fi)
 
 `npm run dev` still binds to localhost only (Vite default) and is unaffected.
@@ -108,6 +107,8 @@ puter_app/
     index.js       Express API + static serving
     parser.js      PUTER.md parser (line-based, tolerant)
     state.js       Daily check/hide state (atomic writes, 4am rollover)
+    editor.js      Structural editor for PUTER.md Daily Checklist (Phase 3.5)
+    backups/       Timestamped PUTER.md backups — git-ignored, auto-created
   client/
     public/
       icons/       PWA icons (192, 512, 180px) — replace with real art
@@ -123,9 +124,10 @@ puter_app/
     PHASE1_BUILD_BRIEF.md
     PHASE2_BUILD_PLAN.md
     PHASE3_BUILD_PLAN.md
+    PHASE3_5_BUILD_PLAN.md
     ROADMAP.md
   .env.example     committed — copy to .env and fill in
-  NOTES.md         parser and PWA assumptions
+  NOTES.md         parser, PWA, and write-safety assumptions
 ```
 
 ---
@@ -136,14 +138,20 @@ puter_app/
 |---|---|
 | `GET /api/health` | File status and last-read timestamps |
 | `GET /api/goals` | Goals parsed from PUTER.md |
-| `GET /api/daily` | Daily Checklist sections and items |
+| `GET /api/daily` | Daily Checklist sections, items, and PUTER.md fingerprint |
 | `GET /api/week` | This Week items and "Week of" value |
 | `GET /api/state` | Today's check/hide state (auto-rolls over at 4am) |
 | `PUT /api/state/check` | Body `{ id, value }` — set check state for a Daily item |
 | `PUT /api/state/hide` | Body `{ id, value }` — set hide state for a Daily item |
+| `POST /api/structure/add` | Body `{ section, text, mtimeMs, hash }` — add item; returns `newId` |
+| `PUT /api/structure/text` | Body `{ id, text, mtimeMs, hash }` — edit item text |
+| `PUT /api/structure/reorder` | Body `{ id, direction, mtimeMs, hash }` — move item up or down within its sub-section |
+| `DELETE /api/structure/item` | Body `{ id, mtimeMs, hash }` — delete item and clear its daily state |
+
+Structure endpoints return the re-parsed Daily Checklist + new fingerprint on success, or `409 { conflict: true, reload: true }` if PUTER.md changed on disk since the client last read it.
 
 ---
 
 ## Phase scope
 
-**v0.3.0** adds interactive Daily Checklist state — check/uncheck items and hide items today-only. The app writes only `server/state/daily-state.json` (local, git-ignored, rolls over at 4am). The OneDrive P.U.T.E.R. folder is never written. Structural edits to PUTER.md, This Week writes, offline capture, and the conversational brain are later phases — see `docs/ROADMAP.md`.
+**v0.3.1** adds structural editing of the Daily Checklist in PUTER.md — reorder items, add items, edit item text, and delete items — from PC or phone. Writes are surgical (target line only, every other byte identical), guarded by an mtime+hash fingerprint, and backed up before each write. The only OneDrive file the app writes is PUTER.md, and only its Daily Checklist section. Phase 3 check/hide state is unchanged. This Week writes, Goals writes, offline capture, and the conversational brain are later phases — see `docs/ROADMAP.md`.

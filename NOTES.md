@@ -83,4 +83,24 @@ Icons are solid-color PNG placeholders (`#4a7c59` accent). The 512×512 icon is 
 
 ---
 
-*Parser notes: Phase 1 (v0.1.0). PWA notes: Phase 2 (v0.2.0). Daily-state/ID notes: Phase 3 (v0.3.0). Update this file if `PUTER.md` formatting or the PWA strategy changes significantly.*
+
+---
+
+## Phase 3.5 — Structural-write assumptions (v0.3.1)
+
+### Surgical-edit rule
+The app never regenerates PUTER.md from a parsed model. Every write locates the target item by its `<!-- id: SLUG -->` comment, modifies only that line (or swaps exactly two adjacent lines for reorder), and leaves every other byte of the file identical — blank lines, comment blocks, the version header, and the changelog are all untouched. Only the Daily Checklist section (`## Daily Checklist` up to the next `##`) is ever touched; This Week, Goals, and all other sections are off-limits.
+
+### On-disk-change guard (optimistic concurrency)
+`GET /api/daily` now returns a `fingerprint: { mtimeMs, hash }` alongside the sections. Every structure-edit request echoes the fingerprint back. The server re-stats and re-hashes PUTER.md; if either value differs it returns HTTP 409 `{ conflict: true, reload: true }` without writing. The frontend shows a "PUTER.md changed on disk — reload" banner and exits edit mode. This prevents clobbering edits made in VS Code or from another device while the app is open.
+
+### Backups and atomic write
+Before each accepted write, the server copies PUTER.md to `server/backups/PUTER.md.<ISO-timestamp>.bak` (oldest pruned when count reaches 20). The write itself goes to a `.tmp` file first, then an atomic `rename` replaces the live file — so PUTER.md is never in a partially written state. `server/backups/` is git-ignored and auto-created on first write.
+
+### ID minting and uniqueness
+New items: text is slugified (lowercase, non-alphanumeric runs → hyphens, max 60 chars). If the slug already exists in the section, a `-2`, `-3`, … suffix is appended until unique. The ID set is computed from the raw file lines (all `<!-- id: SLUG -->` patterns in the Daily Checklist section).
+
+### What the client holds
+The client stores the fingerprint in `daily.data.fingerprint` (updated from every GET /api/daily response and from every successful structure-edit response). The App component passes it into each structure-edit call; it is never persisted to localStorage or service-worker cache.
+
+*Parser notes: Phase 1 (v0.1.0). PWA notes: Phase 2 (v0.2.0). Daily-state/ID notes: Phase 3 (v0.3.0). Structural-write notes: Phase 3.5 (v0.3.1). Update this file if `PUTER.md` formatting or the PWA strategy changes significantly.*

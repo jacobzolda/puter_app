@@ -1,7 +1,7 @@
 # P.U.T.E.R. App — Phase 3.5 Build Plan
 ### Structural editing of the Daily Checklist (reorder / add / edit text / delete)
 **Operator:** Jacob Zolda
-**Software version target:** v0.4.0
+**Software version target:** v0.3.1
 **Document version:** v0.8 (unchanged — no PUTER.md migration needed)
 **Status:** Planned — ready for Claude Code execution
 
@@ -110,12 +110,12 @@ These address the post-change tedium (doc drift, scattered port numbers). They a
 - [ ] Daily check/hide (Phase 3) still works; state survives reorder and text edits.
 
 **Closeout (Claude Code, same session):**
-- [ ] `PUTER_APP_BUILD_LOG.md` — new Phase 3.5 entry (v0.4.0): editor module, safe-write strategy, API, Edit list mode, out-of-scope, test steps.
-- [ ] `README.md` — version header → v0.4.0; new endpoints in the table; Phase scope updated; structure tree kept high-level.
+- [ ] `PUTER_APP_BUILD_LOG.md` — new Phase 3.5 entry (v0.3.1): editor module, safe-write strategy, API, Edit list mode, out-of-scope, test steps.
+- [ ] `README.md` — version header → v0.3.1; new endpoints in the table; Phase scope updated; structure tree kept high-level.
 - [ ] `NOTES.md` — new "Phase 3.5 — structural-write assumptions" section (surgical edits, mtime/hash guard, backups, atomic write, ID minting); footer line updated.
 - [ ] `ROADMAP.md` — "Where we are now" updated (or left as a pointer to the build log per the guardrail); changelog entry; mark Phase 3.5 done.
 
 ---
 
 ## Versioning note
-Phase labels and software versions are independent (two-version-lines principle). "3.5" is a roadmap waypoint; the software takes its next minor bump to **v0.4.0** for the new write surface. PUTER.md stays **v0.8** — its format is unchanged and app edits don't bump it. v1 is still earned only at conversational + local model + always-on box.
+Phase labels and software versions are independent (two-version-lines principle). "3.5" is a roadmap waypoint; the software takes its next minor bump to **v0.3.1** for the new write surface. PUTER.md stays **v0.8** — its format is unchanged and app edits don't bump it. v1 is still earned only at conversational + local model + always-on box.

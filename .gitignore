@@ -68,6 +68,9 @@ web_modules/
 # Daily state (app-owned, not committed — resets each day)
 server/state/
 
+# PUTER.md backups written on each structural edit
+server/backups/
+
 # dotenv environment variable files
 .env
 .env.*

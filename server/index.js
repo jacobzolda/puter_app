@@ -7,7 +7,8 @@ const os = require('os');
 const path = require('path');
 const fs = require('fs');
 const { parsePuterMd } = require('./parser');
-const { readState, setChecked, setHidden } = require('./state');
+const { readState, setChecked, setHidden, removeIdFromState } = require('./state');
+const { performEdit, getFileFingerprint } = require('./editor');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -68,12 +69,15 @@ app.get('/api/goals', (req, res) => {
   });
 });
 
-// GET /api/daily
+// GET /api/daily — includes fingerprint for optimistic-concurrency on structure edits
 app.get('/api/daily', (req, res) => {
   const parsed = getParsed();
+  let fingerprint = null;
+  try { fingerprint = getFileFingerprint(PUTER_MD); } catch {}
   res.json({
     sections: parsed.daily ?? [],
     parseWarnings: parsed.warnings.filter(w => w.startsWith('daily:')),
+    fingerprint,
   });
 });
 
@@ -122,6 +126,106 @@ app.put('/api/state/hide', (req, res) => {
   }
 });
 
+// ---------------------------------------------------------------------------
+// Phase 3.5 — structural editing of Daily Checklist in PUTER.md
+// All four endpoints return the re-parsed Daily Checklist on success,
+// or HTTP 409 + { conflict: true, reload: true } if the file changed on disk.
+// ---------------------------------------------------------------------------
+
+// Validate that mtimeMs and hash are present in the request body.
+function requireFingerprint(req, res) {
+  const { mtimeMs, hash } = req.body;
+  if (typeof mtimeMs !== 'number' || typeof hash !== 'string') {
+    res.status(400).json({ error: 'mtimeMs (number) and hash (string) required' });
+    return null;
+  }
+  return { mtimeMs, hash };
+}
+
+// Build the standard success response: re-parsed daily sections + new fingerprint.
+function buildDailyResponse(fingerprint) {
+  const parsed = getParsed();
+  return {
+    sections: parsed.daily ?? [],
+    parseWarnings: parsed.warnings.filter(w => w.startsWith('daily:')),
+    fingerprint,
+  };
+}
+
+// Shared error handler for structure endpoints.
+function handleEditError(e, res) {
+  if (e.conflict) return res.status(409).json({ conflict: true, reload: true });
+  if (e.notFound) return res.status(404).json({ error: e.message });
+  return res.status(500).json({ error: e.message });
+}
+
+// POST /api/structure/add  body: { section, text, mtimeMs, hash }
+// Returns { ...dailySections, newId }
+app.post('/api/structure/add', (req, res) => {
+  const fp = requireFingerprint(req, res);
+  if (!fp) return;
+  const { section, text } = req.body;
+  if (typeof section !== 'string' || typeof text !== 'string' || !text.trim()) {
+    return res.status(400).json({ error: 'section (string) and text (non-empty string) required' });
+  }
+  try {
+    const result = performEdit(PUTER_MD, fp, 'add', { section, text: text.trim() });
+    res.json({ ...buildDailyResponse(result.fingerprint), newId: result.newId });
+  } catch (e) {
+    handleEditError(e, res);
+  }
+});
+
+// PUT /api/structure/text  body: { id, text, mtimeMs, hash }
+app.put('/api/structure/text', (req, res) => {
+  const fp = requireFingerprint(req, res);
+  if (!fp) return;
+  const { id, text } = req.body;
+  if (typeof id !== 'string' || typeof text !== 'string' || !text.trim()) {
+    return res.status(400).json({ error: 'id (string) and text (non-empty string) required' });
+  }
+  try {
+    const result = performEdit(PUTER_MD, fp, 'text', { id, text: text.trim() });
+    res.json(buildDailyResponse(result.fingerprint));
+  } catch (e) {
+    handleEditError(e, res);
+  }
+});
+
+// PUT /api/structure/reorder  body: { id, direction, mtimeMs, hash }
+app.put('/api/structure/reorder', (req, res) => {
+  const fp = requireFingerprint(req, res);
+  if (!fp) return;
+  const { id, direction } = req.body;
+  if (typeof id !== 'string' || (direction !== 'up' && direction !== 'down')) {
+    return res.status(400).json({ error: 'id (string) and direction ("up"|"down") required' });
+  }
+  try {
+    const result = performEdit(PUTER_MD, fp, 'reorder', { id, direction });
+    res.json(buildDailyResponse(result.fingerprint));
+  } catch (e) {
+    handleEditError(e, res);
+  }
+});
+
+// DELETE /api/structure/item  body: { id, mtimeMs, hash }
+app.delete('/api/structure/item', (req, res) => {
+  const fp = requireFingerprint(req, res);
+  if (!fp) return;
+  const { id } = req.body;
+  if (typeof id !== 'string') {
+    return res.status(400).json({ error: 'id (string) required' });
+  }
+  try {
+    const result = performEdit(PUTER_MD, fp, 'delete', { id });
+    // Also remove the id from daily-state so stale check/hide entries don't linger.
+    try { removeIdFromState(id); } catch {}
+    res.json(buildDailyResponse(result.fingerprint));
+  } catch (e) {
+    handleEditError(e, res);
+  }
+});
+
 // SPA catch-all — must be after all /api/* routes
 if (serveStatic) {
   app.get('*', (req, res) => {
@@ -129,11 +233,10 @@ if (serveStatic) {
   });
 }
 
-// Bind to 0.0.0.0 so the phone can reach this server over the LAN.
-// This is intentional: data is read-only and the network is a trusted home Wi-Fi.
-// Revisit at Phase 3 (writes) and Phase 4 (always-on box).
+// Binds to 0.0.0.0 so the phone can reach this server over the LAN.
+// Phase 3.5 introduces PUTER.md writes — see security note in README.md.
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`\nP.U.T.E.R. v0.3.0`);
+  console.log(`\nP.U.T.E.R. v0.3.1`);
   if (serveStatic) {
     console.log(`  Mode:    serve (built frontend + API, one origin)`);
   } else {
