@@ -76,4 +76,17 @@ Icons are solid-color PNG placeholders (`#4a7c59` accent). The 512×512 icon is 
 
 ---
 
-*Parser notes: Phase 1 (v0.1.0). PWA notes: Phase 2 (v0.2.0). Update this file if `PUTER.md` formatting or the PWA strategy changes significantly.*
+## Phase 3 — Daily-state and ID assumptions (v0.3.0)
+
+### Daily Checklist IDs
+- Each Daily Checklist item carries a trailing `<!-- id: SLUG -->`. The parser captures the slug into the item's `id` field and strips the comment from rendered text. Only the `id:` pattern is treated as an ID — section-note comments (`<!-- *text* -->`) are left alone.
+- The box character on Daily items is no longer the source of check-state; it stays `[ ]` in PUTER.md (template). An untagged Daily item still renders but cannot hold state and emits a parse warning.
+
+### Daily-state file
+- The app owns `server/state/daily-state.json`, shape `{ day, checked[], hidden[] }` — the only file the app writes. PUTER.md / OneDrive are never written.
+- `logicalDay()` sets the day boundary at 4am so a late-night session lands on the right day. On every state read/write, if the stored day ≠ the current logical day, state resets to empty — lazy rollover, no scheduler. Writes are atomic (`.tmp` → rename); `server/state/` is git-ignored.
+- Check/hide require the live backend (PC on) — no offline write-queue. Hide is today-only and clears at rollover; Manage mode reveals hidden items and un-hides.
+
+---
+
+*Parser notes: Phase 1 (v0.1.0). PWA notes: Phase 2 (v0.2.0). Daily-state/ID notes: Phase 3 (v0.3.0). Update this file if `PUTER.md` formatting or the PWA strategy changes significantly.*

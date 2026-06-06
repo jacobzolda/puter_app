@@ -56,7 +56,7 @@ So they are never an expensive retrofit:
 
 - **Backend:** Node.js (one language across the app).
 - **Frontend:** React (chosen — also doubles as portfolio evidence; cross-ref **CAR**).
-- **Derived index:** SQLite, introduced when queries/writes need it (Phase 3) — not before.
+- **Derived index:** SQLite, introduced only when a query actually needs it — deferred past Phase 3 (its original justification was log filtering, which stays in Bear).
 - **Markdown layer:** parse the canonical files; tolerate human edits.
 - **Version control:** the app lives in its own local git repository, kept **outside** the OneDrive-synced folder to avoid git/OneDrive conflicts.
 - **Model runner (later):** Ollama on the always-on box, speaking the Anthropic Messages API.
@@ -99,10 +99,11 @@ So they are never an expensive retrofit:
 
 ## Where we are now
 
-Phase 2 complete (v0.2.0): dashboard reachable on the iPhone over Wi-Fi as an installable PWA, offline message when the PC is off, server on port 3001. Phase 3 in progress (Path B, stable item IDs, lean check/hide): PUTER.md ID migration complete (v0.8). Next action: Claude Code executes the Phase 3 build.
+Phase 3 complete (v0.3.0): the Daily Checklist is write-enabled — check/uncheck and today-only hide, shared across PC and phone from one backend, with a 4am rollover. Path B held: the app writes only its own daily-state file; PUTER.md (v0.8) and OneDrive are never touched. Next: Phase 3.5 (structural editing of PUTER.md), when you choose to start it.
 
 ---
 
 ## Changelog
+- **v0.3** — Phase 3 shipped (app v0.3.0). "Where we are now" advanced to complete; next milestone is Phase 3.5. Corrected the SQLite line to reflect its deferral past Phase 3.
 - **v0.2** — Phase 3 redefined around Path B: check/hide state in an app-owned daily-state file, PUTER.md as a stable-ID template, no daily-log writes. SQLite and offline-capture deferred (their justification was logging, which stays in Bear). Added Phase 3.5 for structural editing of PUTER.md. Updated "Where we are now" to reflect Phase 2 complete.
 - **v0.1** — Roadmap established. Two version lines defined, six architecture decisions and four baked-in principles recorded, five phases laid out with definitions of done, React chosen, tech stack set.

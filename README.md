@@ -115,7 +115,6 @@ puter_app/
       components/
         DailyChecklist.jsx
         ThisWeek.jsx
-        Recurring.jsx
         Goals.jsx
   scripts/
     gen-icons.js   Placeholder icon generator
