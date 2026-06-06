@@ -1,4 +1,4 @@
-# P.U.T.E.R. App — v0.2.0
+# P.U.T.E.R. App — v0.3.0
 
 **P**ersonal **U**tility **T**o **E**nhance **R**elaxation — local dashboard for Jacob Zolda's life-management system, installable as a PWA on the phone.
 
@@ -85,9 +85,9 @@ A self-signed cert (mkcert, path 2) would unlock the full install badge and true
 
 ## Security note — 0.0.0.0 binding
 
-`npm run serve` binds to **all network interfaces** (`0.0.0.0`). This is deliberate: the phone needs to reach the PC over home Wi-Fi. The data served is **read-only** — the app never writes to the OneDrive P.U.T.E.R. folder. This posture is acceptable on a trusted home network. Revisit at:
+`npm run serve` binds to **all network interfaces** (`0.0.0.0`). This is deliberate: the phone needs to reach the PC over home Wi-Fi. The source files (`PUTER.md`, OneDrive) are **never written by the app** — the only file the app writes is `server/state/daily-state.json` (local daily check/hide state). This posture is acceptable on a trusted home network. Revisit at:
 
-- **Phase 3** (writes added — access control becomes more important)
+- **Phase 3.5** (PUTER.md structural edits — access control becomes more important)
 - **Phase 4** (always-on box — the box is reachable beyond home Wi-Fi)
 
 `npm run dev` still binds to localhost only (Vite default) and is unaffected.
@@ -138,9 +138,12 @@ puter_app/
 | `GET /api/daily` | Daily Checklist sections and items |
 | `GET /api/week` | This Week items and "Week of" value |
 | `GET /api/recurring` | Recurring (non-daily) items |
+| `GET /api/state` | Today's check/hide state (auto-rolls over at 4am) |
+| `PUT /api/state/check` | Body `{ id, value }` — set check state for a Daily item |
+| `PUT /api/state/hide` | Body `{ id, value }` — set hide state for a Daily item |
 
 ---
 
 ## Phase scope
 
-This release is **read-only**. The app never writes to the OneDrive P.U.T.E.R. folder. Write features, offline capture, and the conversational brain are later phases — see `docs/ROADMAP.md`.
+**v0.3.0** adds interactive Daily Checklist state — check/uncheck items and hide items today-only. The app writes only `server/state/daily-state.json` (local, git-ignored, rolls over at 4am). The OneDrive P.U.T.E.R. folder is never written. Structural edits to PUTER.md, This Week writes, offline capture, and the conversational brain are later phases — see `docs/ROADMAP.md`.

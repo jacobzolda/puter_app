@@ -108,30 +108,102 @@ body {
   border-left: 2px solid var(--border);
 }
 
+/* Section header row (title + manage button) */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.section-header .section-title {
+  margin-bottom: 0;
+}
+
+.manage-btn {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.25rem 0.6rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.manage-btn.is-active {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 /* Checklist items */
 .checklist { list-style: none; }
 
 .checklist-item {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.6rem;
-  padding: 0.25rem 0;
+  padding: 0.3rem 0;
   font-size: 0.925rem;
+  min-height: 2.2rem;
 }
 
 .checklist-item input[type="checkbox"] {
-  margin-top: 0.25rem;
   flex-shrink: 0;
   accent-color: var(--accent);
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+}
+
+.checklist-item input[type="checkbox"]:disabled {
   cursor: default;
-  pointer-events: none;
-  width: 14px;
-  height: 14px;
+  opacity: 0.45;
 }
 
 .checklist-item.is-checked .item-text {
   color: var(--checked);
   text-decoration: line-through;
+}
+
+.checklist-item.is-hidden-item {
+  opacity: 0.45;
+}
+
+.item-text {
+  flex: 1;
+}
+
+.item-notice {
+  font-size: 0.72rem;
+  color: #a04000;
+  flex-shrink: 0;
+}
+
+/* Hide / Unhide button in Manage mode */
+.hide-btn {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 0.2rem 0.5rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.hide-btn.is-unhide {
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 /* Week section */

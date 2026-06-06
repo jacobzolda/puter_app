@@ -1,7 +1,7 @@
 # P.U.T.E.R. — Software Roadmap
 ### From living document to conversational system
 **Operator:** Jacob Zolda
-**Version:** 0.1
+**Version:** 0.2
 **Status:** Living document
 
 ---
@@ -21,7 +21,7 @@ It complements the other two files without duplicating them:
 
 P.U.T.E.R. now has two independent version numbers:
 
-- **Document version** — `PUTER.md` (currently v0.4). Tracks the system's rules and structure.
+- **Document version** — `PUTER.md` (currently v0.8). Tracks the system's rules and structure.
 - **Software version** — the app. Stays **v0.x** until it reaches **v1**.
 
 **v1 is earned, not assigned.** The app is v1 only when it is **conversational, running on a local model, on the always-on machine.** Everything before that — dashboard, capture, reminders, even Claude wired in as an assist — is foundation, and stays v0.x.
@@ -75,10 +75,15 @@ So they are never an expensive retrofit:
 - **Scope:** Reach the dashboard from the phone's browser over home Wi-Fi (PC's local address). Make it an installable PWA — home-screen icon, fullscreen.
 - **Done when:** The dashboard opens as an app-like icon on the phone while the PC is on.
 
-### Phase 3 — Write-enabled + offline capture
-- **Goal:** P.U.T.E.R. becomes genuinely useful, not just a viewer.
-- **Scope:** Append to the daily log, check off tasks, edit This Week — from PC or phone. Introduce the SQLite derived index for fast filtering. Build offline-first capture that syncs when back online. Careful, safe writes to the canonical markdown.
-- **Done when:** Jacob can run his nightly log and daily check-offs entirely in the app, offline-capable.
+### Phase 3 — Write-enabled checklist state (check / hide)
+- **Goal:** P.U.T.E.R. becomes usable, not just a viewer.
+- **Scope:** Check/uncheck Daily Checklist items and hide items today-only, from PC or phone, sharing one backend. **Path B:** the app owns a separate daily-state file; PUTER.md becomes a template (boxes always `[ ]`, items carry stable `<!-- id: -->` tags) and is never written by the app. State resets daily at a 4am rollover; hide is today-only; a "Manage" mode reveals and un-hides. No daily-log writes (logs stay in Bear → OneDrive). No SQLite. No offline write-queue.
+- **Done when:** Jacob can run his whole Daily Checklist in the app — check, hide, reveal, un-hide — with PUTER.md untouched and state auto-clearing each day.
+
+### Phase 3.5 — Structural editing of PUTER.md
+- **Goal:** Edit the template itself from the app.
+- **Scope:** Reorder checklist items, add a new item, edit an item's text — written safely back to PUTER.md. Stable IDs (from Phase 3) make this carry state across edits with no migration. Likely the point This Week becomes write-enabled too (with its own weekly reset cadence).
+- **Done when:** Jacob can reshape the Daily Checklist from the app without opening VS Code.
 
 ### Phase 4 — Always-on box + self-hosted sync
 - **Goal:** Always available, privacy-first. *(Begins with a new chat for the PC build; cross-ref **PCB** / **FIN**.)*
@@ -94,9 +99,10 @@ So they are never an expensive retrofit:
 
 ## Where we are now
 
-Phase 1, not yet started. Frontend framework chosen: React. Next action: Claude Code executes the Phase 1 build brief.
+Phase 2 complete (v0.2.0): dashboard reachable on the iPhone over Wi-Fi as an installable PWA, offline message when the PC is off, server on port 3001. Phase 3 in progress (Path B, stable item IDs, lean check/hide): PUTER.md ID migration complete (v0.8). Next action: Claude Code executes the Phase 3 build.
 
 ---
 
 ## Changelog
+- **v0.2** — Phase 3 redefined around Path B: check/hide state in an app-owned daily-state file, PUTER.md as a stable-ID template, no daily-log writes. SQLite and offline-capture deferred (their justification was logging, which stays in Bear). Added Phase 3.5 for structural editing of PUTER.md. Updated "Where we are now" to reflect Phase 2 complete.
 - **v0.1** — Roadmap established. Two version lines defined, six architecture decisions and four baked-in principles recorded, five phases laid out with definitions of done, React chosen, tech stack set.

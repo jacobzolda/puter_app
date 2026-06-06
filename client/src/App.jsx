@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import DailyChecklist from './components/DailyChecklist';
 import ThisWeek from './components/ThisWeek';
 import Goals from './components/Goals';
@@ -6,8 +6,8 @@ import './index.css';
 
 const FOCUS_IDS = new Set(['CAR', 'HST', 'FIT']);
 
-async function fetchJson(url) {
-  const res = await fetch(url);
+async function fetchJson(url, opts) {
+  const res = await fetch(url, opts);
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
   return res.json();
 }
@@ -32,6 +32,22 @@ export default function App() {
   const week = useApi('/api/week');
   const goals = useApi('/api/goals');
 
+  const [dailyState, setDailyState] = useState(null);
+
+  useEffect(() => {
+    fetchJson('/api/state').then(setDailyState).catch(() => {});
+  }, []);
+
+  const updateDailyState = useCallback(async (endpoint, id, value) => {
+    const next = await fetchJson(`/api/state/${endpoint}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, value }),
+    });
+    setDailyState(next);
+    return next;
+  }, []);
+
   // Health check drives the top-level reachability state.
   // null = still checking, true = server up, false = unreachable.
   const [serverUp, setServerUp] = useState(null);
@@ -54,7 +70,7 @@ export default function App() {
   } else {
     mainContent = (
       <>
-        <DailyChecklist {...daily} />
+        <DailyChecklist {...daily} dailyState={dailyState} onUpdateState={updateDailyState} />
         <ThisWeek {...week} />
         <Goals {...goals} focusIds={FOCUS_IDS} />
       </>
@@ -66,7 +82,7 @@ export default function App() {
       <header className="app-header">
         <h1 className="app-title">P.U.T.E.R.</h1>
         <span className="app-subtitle">Personal Utility To Enhance Relaxation</span>
-        <span className="readonly-badge" aria-label="Read-only view">read-only</span>
+        <span className="readonly-badge" aria-label="Source files are read-only">source read-only</span>
       </header>
 
       <main>{mainContent}</main>

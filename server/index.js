@@ -7,6 +7,7 @@ const os = require('os');
 const path = require('path');
 const fs = require('fs');
 const { parsePuterMd } = require('./parser');
+const { readState, setChecked, setHidden } = require('./state');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -86,6 +87,41 @@ app.get('/api/week', (req, res) => {
   });
 });
 
+// GET /api/state
+app.get('/api/state', (req, res) => {
+  try {
+    res.json(readState());
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// PUT /api/state/check  body: { id, value }
+app.put('/api/state/check', (req, res) => {
+  const { id, value } = req.body;
+  if (typeof id !== 'string' || typeof value !== 'boolean') {
+    return res.status(400).json({ error: 'id (string) and value (boolean) required' });
+  }
+  try {
+    res.json(setChecked(id, value));
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// PUT /api/state/hide  body: { id, value }
+app.put('/api/state/hide', (req, res) => {
+  const { id, value } = req.body;
+  if (typeof id !== 'string' || typeof value !== 'boolean') {
+    return res.status(400).json({ error: 'id (string) and value (boolean) required' });
+  }
+  try {
+    res.json(setHidden(id, value));
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // SPA catch-all — must be after all /api/* routes
 if (serveStatic) {
   app.get('*', (req, res) => {
@@ -97,7 +133,7 @@ if (serveStatic) {
 // This is intentional: data is read-only and the network is a trusted home Wi-Fi.
 // Revisit at Phase 3 (writes) and Phase 4 (always-on box).
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`\nP.U.T.E.R. v0.2.0`);
+  console.log(`\nP.U.T.E.R. v0.3.0`);
   if (serveStatic) {
     console.log(`  Mode:    serve (built frontend + API, one origin)`);
   } else {

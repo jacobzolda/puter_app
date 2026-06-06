@@ -29,6 +29,15 @@ function parseCheckboxLine(line) {
   return { checked: m[1].trim().toLowerCase() === 'x', text: m[2].trim() };
 }
 
+// Extract trailing <!-- id: SLUG --> from a text string.
+// Returns { text, id } — id is null if the pattern is absent.
+// Only matches "id:" comments; ignores other <!-- ... --> comments.
+function extractId(raw) {
+  const m = raw.match(/^(.*?)\s*<!--\s*id:\s*([\w-]+)\s*-->\s*$/);
+  if (m) return { text: m[1].trim(), id: m[2] };
+  return { text: raw.trim(), id: null };
+}
+
 // Parse the Daily Checklist section.
 // Bold lines (**text**) are sub-section headers; checkbox lines are items.
 // Blockquotes are attached as a note to the current sub-section.
@@ -57,7 +66,11 @@ function parseDailyChecklist(lines) {
         current = { name: 'Uncategorized', items: [], note: null };
         sections.push(current);
       }
-      current.items.push(cb);
+      const { text, id } = extractId(cb.text);
+      if (id === null) {
+        warnings.push(`Untagged Daily item (no <!-- id: SLUG -->): "${text}"`);
+      }
+      current.items.push({ text, id });
       continue;
     }
 
