@@ -107,6 +107,7 @@ puter_app/
   server/
     index.js       Express API + static serving
     parser.js      PUTER.md parser (line-based, tolerant)
+    state.js       Daily check/hide state (atomic writes, 4am rollover)
   client/
     public/
       icons/       PWA icons (192, 512, 180px) — replace with real art
@@ -121,6 +122,7 @@ puter_app/
   docs/
     PHASE1_BUILD_BRIEF.md
     PHASE2_BUILD_PLAN.md
+    PHASE3_BUILD_PLAN.md
     ROADMAP.md
   .env.example     committed — copy to .env and fill in
   NOTES.md         parser and PWA assumptions
@@ -136,7 +138,6 @@ puter_app/
 | `GET /api/goals` | Goals parsed from PUTER.md |
 | `GET /api/daily` | Daily Checklist sections and items |
 | `GET /api/week` | This Week items and "Week of" value |
-| `GET /api/recurring` | Recurring (non-daily) items |
 | `GET /api/state` | Today's check/hide state (auto-rolls over at 4am) |
 | `PUT /api/state/check` | Body `{ id, value }` — set check state for a Daily item |
 | `PUT /api/state/hide` | Body `{ id, value }` — set hide state for a Daily item |

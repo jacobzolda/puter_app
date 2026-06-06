@@ -18,12 +18,6 @@ Assumptions the parser makes about `PUTER.md` structure. Revisit these if format
 - Blockquote lines (`> text`) are attached as a `note` to the current sub-section and displayed beneath its items.
 - H3 headings or other markup inside the Daily Checklist section are silently skipped.
 
-### Recurring
-
-- Any `- [ ]` / `- [x]` line is treated as an item.
-- Bare `- text` lines (no checkbox) are included as unchecked items — this handles any entries missing the bracket syntax.
-- H3 headings and blockquotes are skipped.
-
 ### This Week
 
 - The `Week of: ____` line is extracted; the value after the colon is the week identifier (may be blank/underscores, which displays as `—`).
