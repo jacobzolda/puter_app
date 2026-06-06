@@ -55,7 +55,7 @@ Builds the frontend (`client/dist`), then starts Express on `0.0.0.0:PORT`. The 
 
 ```
   Network (use on phone):
-    http://192.168.x.x:4173
+    http://192.168.x.x:3001
 ```
 
 Type that address into the phone's browser while the PC is on.
@@ -76,7 +76,7 @@ A self-signed cert (mkcert, path 2) would unlock the full install badge and true
 ### Steps (iOS Safari)
 
 1. `npm run serve` on the PC.
-2. Note the `http://192.168.x.x:4173` URL in the console.
+2. Note the `http://192.168.x.x:3001` URL in the console.
 3. Open that URL in Safari on the iPhone.
 4. Tap the Share icon → **Add to Home Screen** → **Add**.
 5. Launch from the icon. While the PC is on you see live data; while it's off you see the cached shell and the "Can't reach P.U.T.E.R." message.
