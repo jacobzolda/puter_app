@@ -34,6 +34,36 @@ export default function App() {
   const recurring = useApi('/api/recurring');
   const goals = useApi('/api/goals');
 
+  // Health check drives the top-level reachability state.
+  // null = still checking, true = server up, false = unreachable.
+  const [serverUp, setServerUp] = useState(null);
+  useEffect(() => {
+    fetch('/api/health')
+      .then(r => setServerUp(r.ok))
+      .catch(() => setServerUp(false));
+  }, []);
+
+  let mainContent;
+  if (serverUp === false) {
+    mainContent = (
+      <div className="offline-state" role="status" aria-live="polite">
+        <p className="offline-title">Can't reach P.U.T.E.R.</p>
+        <p className="offline-message">Is the PC on and connected to the same Wi-Fi?</p>
+      </div>
+    );
+  } else if (serverUp === null) {
+    mainContent = <p className="state-loading">Connecting…</p>;
+  } else {
+    mainContent = (
+      <>
+        <DailyChecklist {...daily} />
+        <ThisWeek {...week} />
+        <Recurring {...recurring} />
+        <Goals {...goals} focusIds={FOCUS_IDS} />
+      </>
+    );
+  }
+
   return (
     <>
       <header className="app-header">
@@ -42,12 +72,7 @@ export default function App() {
         <span className="readonly-badge" aria-label="Read-only view">read-only</span>
       </header>
 
-      <main>
-        <DailyChecklist {...daily} />
-        <ThisWeek {...week} />
-        <Recurring {...recurring} />
-        <Goals {...goals} focusIds={FOCUS_IDS} />
-      </main>
+      <main>{mainContent}</main>
     </>
   );
 }
