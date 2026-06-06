@@ -49,7 +49,7 @@ Assumptions the parser makes about `PUTER.md` structure. Revisit these if format
 
 ### One origin, one port
 
-`npm run serve` builds the client and starts Express on `0.0.0.0:PORT` (default 4173). The built frontend is served as static files from `client/dist`; the `/api/*` routes sit on the same origin. Dev mode (`npm run dev`) still uses two processes (Vite + Express) with a Vite proxy — the LAN/serve path is only for phone use.
+`npm run serve` builds the client and starts Express on `0.0.0.0:PORT` (default 3001). The built frontend is served as static files from `client/dist`; the `/api/*` routes sit on the same origin. Dev mode (`npm run dev`) still uses two processes (Vite + Express) with a Vite proxy — the LAN/serve path is only for phone use.
 
 ### Service worker caching strategy
 

@@ -43,7 +43,7 @@ PORT=4173        # optional — defaults to 4173
 npm run dev
 ```
 
-Starts the Express backend (port from `.env`, default 4173) and the Vite dev server (port 5173) in one terminal. Vite proxies `/api/*` to Express. Open **http://localhost:3001**. Edit `PUTER.md` and refresh to see changes immediately.
+Starts the Express backend (port from `.env`, default 3001) and the Vite dev server (port 5173) in one terminal. Vite proxies `/api/*` to Express. Open **http://localhost:5173**. Edit `PUTER.md` and refresh to see changes immediately.
 
 ### Serve (phone use)
 
