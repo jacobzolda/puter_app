@@ -86,15 +86,6 @@ app.get('/api/week', (req, res) => {
   });
 });
 
-// GET /api/recurring
-app.get('/api/recurring', (req, res) => {
-  const parsed = getParsed();
-  res.json({
-    items: parsed.recurring ?? [],
-    parseWarnings: parsed.warnings.filter(w => w.startsWith('recurring:')),
-  });
-});
-
 // SPA catch-all — must be after all /api/* routes
 if (serveStatic) {
   app.get('*', (req, res) => {

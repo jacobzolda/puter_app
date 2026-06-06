@@ -74,24 +74,6 @@ function parseDailyChecklist(lines) {
   return { sections, warnings };
 }
 
-// Parse the Recurring section: just a list of checkbox items.
-function parseRecurring(lines) {
-  const items = [];
-  const warnings = [];
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith('#') || trimmed.startsWith('>')) continue;
-    const cb = parseCheckboxLine(trimmed);
-    if (cb) {
-      items.push(cb);
-    } else if (trimmed.startsWith('- ')) {
-      // Bare list item without checkbox
-      items.push({ checked: false, text: trimmed.slice(2).trim() });
-    }
-  }
-  return { items, warnings };
-}
-
 // Parse "This Week — Varying Checklist".
 // Extract "Week of: X" value and items up to the ### Weekly Review subsection.
 function parseThisWeek(lines) {
@@ -196,13 +178,12 @@ function parseGoals(lines) {
 }
 
 // Main entry point: read and parse PUTER.md.
-// Returns { goals, daily, week, recurring, warnings, lastRead }
+// Returns { goals, daily, week, warnings, lastRead }
 function parsePuterMd(filePath) {
   const result = {
     goals: null,
     daily: null,
     week: null,
-    recurring: null,
     warnings: [],
     lastRead: null,
     fileFound: false,
@@ -228,22 +209,6 @@ function parsePuterMd(filePath) {
     } catch (e) {
       result.warnings.push(`daily: Parse error — ${e.message}`);
       result.daily = [];
-    }
-
-    // Recurring
-    try {
-      const recKey = Object.keys(sections).find(k => k.startsWith('Recurring'));
-      if (recKey) {
-        const parsed = parseRecurring(sections[recKey]);
-        result.recurring = parsed.items;
-        result.warnings.push(...parsed.warnings.map(w => `recurring: ${w}`));
-      } else {
-        result.warnings.push('recurring: Section "Recurring" not found');
-        result.recurring = [];
-      }
-    } catch (e) {
-      result.warnings.push(`recurring: Parse error — ${e.message}`);
-      result.recurring = [];
     }
 
     // This Week
