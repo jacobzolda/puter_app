@@ -99,7 +99,7 @@ So they are never an expensive retrofit:
 
 ## Where we are now
 
-Phase 3 complete (v0.3.0): the Daily Checklist is write-enabled — check/uncheck and today-only hide, shared across PC and phone from one backend, with a 4am rollover. Path B held: the app writes only its own daily-state file; PUTER.md (v0.8) and OneDrive are never touched. Next: Phase 3.5 (structural editing of PUTER.md), when you choose to start it.
+Current build status lives in the latest entry of `PUTER_APP_BUILD_LOG.md` — that's the running record of what's actually shipped. The phases and their definitions of done are above.
 
 ---
 
