@@ -9,7 +9,7 @@ const fs = require('fs');
 const { parsePuterMd } = require('./parser');
 
 const app = express();
-const PORT = process.env.PORT || 4173;
+const PORT = process.env.PORT || 3001;
 const PUTER_DIR = process.env.PUTER_DIR;
 
 if (!PUTER_DIR) {
