@@ -1,7 +1,7 @@
 # P.U.T.E.R. — Software Roadmap
 ### From living document to conversational system
 **Operator:** Jacob Zolda
-**Version:** 0.2
+**Version:** 0.4
 **Status:** Living document
 
 ---
@@ -80,10 +80,10 @@ So they are never an expensive retrofit:
 - **Scope:** Check/uncheck Daily Checklist items and hide items today-only, from PC or phone, sharing one backend. **Path B:** the app owns a separate daily-state file; PUTER.md becomes a template (boxes always `[ ]`, items carry stable `<!-- id: -->` tags) and is never written by the app. State resets daily at a 4am rollover; hide is today-only; a "Manage" mode reveals and un-hides. No daily-log writes (logs stay in Bear → OneDrive). No SQLite. No offline write-queue.
 - **Done when:** Jacob can run his whole Daily Checklist in the app — check, hide, reveal, un-hide — with PUTER.md untouched and state auto-clearing each day.
 
-### Phase 3.5 — Structural editing of PUTER.md
+### Phase 3.5 — Structural editing of PUTER.md ✓ done (v0.3.1)
 - **Goal:** Edit the template itself from the app.
-- **Scope:** Reorder checklist items, add a new item, edit an item's text — written safely back to PUTER.md. Stable IDs (from Phase 3) make this carry state across edits with no migration. Likely the point This Week becomes write-enabled too (with its own weekly reset cadence).
-- **Done when:** Jacob can reshape the Daily Checklist from the app without opening VS Code.
+- **Scope:** Reorder checklist items, add a new item, edit an item's text, delete an item — written safely back to PUTER.md. Surgical edits only (target line by ID, every other byte identical). Optimistic concurrency via mtime+hash fingerprint; atomic write with timestamped backups. This Week write-enabling deferred to Phase 4.
+- **Done when:** Jacob can reshape the Daily Checklist from the app without opening VS Code. ✓
 
 ### Phase 4 — Always-on box + self-hosted sync
 - **Goal:** Always available, privacy-first. *(Begins with a new chat for the PC build; cross-ref **PCB** / **FIN**.)*
@@ -104,6 +104,7 @@ Current build status lives in the latest entry of `PUTER_APP_BUILD_LOG.md` — t
 ---
 
 ## Changelog
+- **v0.4** — Phase 3.5 shipped (app v0.3.1). Daily Checklist structural editing live: add, text-edit, reorder, delete — with surgical writes, fingerprint guard, atomic backups. This Week write-enabling deferred to Phase 4.
 - **v0.3** — Phase 3 shipped (app v0.3.0). "Where we are now" advanced to complete; next milestone is Phase 3.5. Corrected the SQLite line to reflect its deferral past Phase 3.
 - **v0.2** — Phase 3 redefined around Path B: check/hide state in an app-owned daily-state file, PUTER.md as a stable-ID template, no daily-log writes. SQLite and offline-capture deferred (their justification was logging, which stays in Bear). Added Phase 3.5 for structural editing of PUTER.md. Updated "Where we are now" to reflect Phase 2 complete.
 - **v0.1** — Roadmap established. Two version lines defined, six architecture decisions and four baked-in principles recorded, five phases laid out with definitions of done, React chosen, tech stack set.

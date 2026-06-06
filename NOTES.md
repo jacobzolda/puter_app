@@ -83,9 +83,6 @@ Icons are solid-color PNG placeholders (`#4a7c59` accent). The 512×512 icon is 
 
 ---
 
-
----
-
 ## Phase 3.5 — Structural-write assumptions (v0.3.1)
 
 ### Surgical-edit rule
