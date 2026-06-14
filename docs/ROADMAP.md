@@ -21,7 +21,7 @@ It complements the other two files without duplicating them:
 
 P.U.T.E.R. now has two independent version numbers:
 
-- **Document version** — `PUTER.md` (currently v0.8). Tracks the system's rules and structure.
+- **Document version** — `PUTER.md` (currently v0.8.1). Tracks the system's rules and structure.
 - **Software version** — the app. Stays **v0.x** until it reaches **v1**.
 
 **v1 is earned, not assigned.** The app is v1 only when it is **conversational, running on a local model, on the always-on machine.** Everything before that — dashboard, capture, reminders, even Claude wired in as an assist — is foundation, and stays v0.x.
