@@ -100,4 +100,17 @@ New items: text is slugified (lowercase, non-alphanumeric runs → hyphens, max 
 ### What the client holds
 The client stores the fingerprint in `daily.data.fingerprint` (updated from every GET /api/daily response and from every successful structure-edit response). The App component passes it into each structure-edit call; it is never persisted to localStorage or service-worker cache.
 
-*Parser notes: Phase 1 (v0.1.0). PWA notes: Phase 2 (v0.2.0). Daily-state/ID notes: Phase 3 (v0.3.0). Structural-write notes: Phase 3.5 (v0.3.1). Update this file if `PUTER.md` formatting or the PWA strategy changes significantly.*
+---
+
+## Phase 3.6 — Rollover, Goals notes, This Week sub-sections (v0.3.2)
+
+### 4am rollover now resolves in PUTER_TZ
+`logicalDay()` previously derived the day from a UTC date while checking the hour in local server time — a mismatch that put the rollover at midnight UTC (8pm EDT). It now shifts the instant back 4 hours and formats the date in `PUTER_TZ` (default `America/New_York`) via `Intl.DateTimeFormat`, so the boundary is always 4am in that zone, DST-aware. Output is still a `YYYY-MM-DD` string and `daily-state.json`'s shape is unchanged. A one-time state reset on first run after deploy is expected.
+
+### Goals strip contextual comments
+The Goals parser now removes `<!-- ... -->` spans (including the italic `<!-- *note* -->` cross-reference comments under FIN/FIT/CRE) from each goal's assembled body, then drops any lines left empty by that removal. Daily Checklist id-handling and This Week parsing are unaffected.
+
+### This Week parses bold sub-headers into groups
+`parseThisWeek` now mirrors the Daily Checklist's bold-header grouping: a line that is only `**Text**` starts a new sub-section, and checkbox items collect under it. Items before the first header land in an untitled group. Trailing inline comments (e.g. `<!-- FIT -->`) are stripped from item text, same as the Daily convention. `GET /api/week` now returns `{ weekOf, sections: [{ title, items: [{ text, checked }] }] }` instead of a flat `items[]`; `ThisWeek.jsx` renders each section with a header, still read-only. The `### Weekly Review` guard remains as defensive code.
+
+*Parser notes: Phase 1 (v0.1.0). PWA notes: Phase 2 (v0.2.0). Daily-state/ID notes: Phase 3 (v0.3.0). Structural-write notes: Phase 3.5 (v0.3.1). Rollover/Goals/This Week notes: Phase 3.6 (v0.3.2). Update this file if `PUTER.md` formatting or the PWA strategy changes significantly.*

@@ -87,12 +87,20 @@ function parseDailyChecklist(lines) {
   return { sections, warnings };
 }
 
+// Strip a trailing inline <!-- ... --> comment (e.g. "Bike tune-up <!-- FIT -->").
+function stripTrailingComment(text) {
+  return text.replace(/\s*<!--[\s\S]*?-->\s*$/, '').trim();
+}
+
 // Parse "This Week — Varying Checklist".
-// Extract "Week of: X" value and items up to the ### Weekly Review subsection.
+// Extract "Week of: X" value and group items under bold-only sub-headers
+// (e.g. **Recurring**), mirroring the Daily Checklist sub-section logic.
+// Items before the first header land in an untitled group.
 function parseThisWeek(lines) {
   const warnings = [];
   let weekOf = null;
-  const items = [];
+  const sections = [];
+  let current = null;
   let inWeeklyReview = false;
 
   for (const line of lines) {
@@ -114,16 +122,30 @@ function parseThisWeek(lines) {
       continue;
     }
 
+    // Bold line = sub-section header: **Recurring**
+    const boldMatch = trimmed.match(/^\*\*(.+?)\*\*$/);
+    if (boldMatch) {
+      current = { title: boldMatch[1].trim(), items: [] };
+      sections.push(current);
+      continue;
+    }
+
     // Checkbox items
     const cb = parseCheckboxLine(trimmed);
     if (cb) {
       // Skip blank placeholder items ("- [ ]" with empty text)
-      if (cb.text.trim()) items.push(cb);
+      const text = stripTrailingComment(cb.text);
+      if (!text) continue;
+      if (!current) {
+        current = { title: null, items: [] };
+        sections.push(current);
+      }
+      current.items.push({ text, checked: cb.checked });
       continue;
     }
   }
 
-  return { weekOf, items, warnings };
+  return { weekOf, sections, warnings };
 }
 
 // Parse Goals section.
@@ -142,11 +164,20 @@ function parseGoals(lines) {
       while (currentGoal.body.length && !currentGoal.body[currentGoal.body.length - 1].trim()) {
         currentGoal.body.pop();
       }
+      // Strip contextual <!-- ... --> notes, then drop any lines left empty by that.
+      const body = currentGoal.body
+        .join('\n')
+        .replace(/<!--[\s\S]*?-->/g, '')
+        .split('\n')
+        .map(l => l.replace(/\s+$/, ''))
+        .filter(l => l.trim() !== '')
+        .join('\n')
+        .trim();
       currentTier.goals.push({
         id: currentGoal.id,
         name: currentGoal.name,
         tier: currentTier.name,
-        body: currentGoal.body.join('\n').trim(),
+        body,
       });
     }
     currentGoal = null;
@@ -229,15 +260,15 @@ function parsePuterMd(filePath) {
       const weekKey = Object.keys(sections).find(k => k.startsWith('This Week'));
       if (weekKey) {
         const parsed = parseThisWeek(sections[weekKey]);
-        result.week = { weekOf: parsed.weekOf, items: parsed.items };
+        result.week = { weekOf: parsed.weekOf, sections: parsed.sections };
         result.warnings.push(...parsed.warnings.map(w => `week: ${w}`));
       } else {
         result.warnings.push('week: Section "This Week" not found');
-        result.week = { weekOf: null, items: [] };
+        result.week = { weekOf: null, sections: [] };
       }
     } catch (e) {
       result.warnings.push(`week: Parse error — ${e.message}`);
-      result.week = { weekOf: null, items: [] };
+      result.week = { weekOf: null, sections: [] };
     }
 
     // Goals

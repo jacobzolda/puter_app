@@ -6,13 +6,13 @@ const path = require('path');
 const STATE_FILE = path.join(__dirname, 'state', 'daily-state.json');
 const TMP_FILE = STATE_FILE + '.tmp';
 
-// If local hour < 4, treat it as yesterday (4am day boundary).
-function logicalDay(now) {
-  const d = new Date(now);
-  if (d.getHours() < 4) {
-    d.setDate(d.getDate() - 1);
-  }
-  return d.toISOString().slice(0, 10); // YYYY-MM-DD
+// The logical day rolls over at 4am in PUTER_TZ (DST-aware via Intl), not midnight UTC.
+function logicalDay(now = new Date()) {
+  const tz = process.env.PUTER_TZ || 'America/New_York';
+  const shifted = new Date(now.getTime() - 4 * 3600 * 1000);
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit',
+  }).format(shifted); // YYYY-MM-DD
 }
 
 function emptyState(day) {

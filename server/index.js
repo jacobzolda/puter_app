@@ -86,7 +86,7 @@ app.get('/api/week', (req, res) => {
   const parsed = getParsed();
   res.json({
     weekOf: parsed.week?.weekOf ?? null,
-    items: parsed.week?.items ?? [],
+    sections: parsed.week?.sections ?? [],
     parseWarnings: parsed.warnings.filter(w => w.startsWith('week:')),
   });
 });
@@ -236,7 +236,7 @@ if (serveStatic) {
 // Binds to 0.0.0.0 so the phone can reach this server over the LAN.
 // Phase 3.5 introduces PUTER.md writes — see security note in README.md.
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`\nP.U.T.E.R. v0.3.1`);
+  console.log(`\nP.U.T.E.R. v0.3.2`);
   if (serveStatic) {
     console.log(`  Mode:    serve (built frontend + API, one origin)`);
   } else {

@@ -1,4 +1,4 @@
-# P.U.T.E.R. App — v0.3.1
+# P.U.T.E.R. App — v0.3.2
 
 **P**ersonal **U**tility **T**o **E**nhance **R**elaxation — local dashboard for Jacob Zolda's life-management system, installable as a PWA on the phone.
 
@@ -29,6 +29,7 @@ Copy `.env.example` to `.env` and set `PUTER_DIR`:
 ```env
 PUTER_DIR=C:\Users\jakez\OneDrive\PUTER
 PORT=3001        # optional — defaults to 3001
+PUTER_TZ=America/New_York # IANA tz name — used for the 4am daily-state rollover
 ```
 
 `.env` is git-ignored and never committed.
@@ -139,7 +140,7 @@ puter_app/
 | `GET /api/health` | File status and last-read timestamps |
 | `GET /api/goals` | Goals parsed from PUTER.md |
 | `GET /api/daily` | Daily Checklist sections, items, and PUTER.md fingerprint |
-| `GET /api/week` | This Week items and "Week of" value |
+| `GET /api/week` | This Week grouped sub-sections (read-only) and "Week of" value |
 | `GET /api/state` | Today's check/hide state (auto-rolls over at 4am) |
 | `PUT /api/state/check` | Body `{ id, value }` — set check state for a Daily item |
 | `PUT /api/state/hide` | Body `{ id, value }` — set hide state for a Daily item |
@@ -155,3 +156,5 @@ Structure endpoints return the re-parsed Daily Checklist + new fingerprint on su
 ## Phase scope
 
 **v0.3.1** adds structural editing of the Daily Checklist in PUTER.md — reorder items, add items, edit item text, and delete items — from PC or phone. Writes are surgical (target line only, every other byte identical), guarded by an mtime+hash fingerprint, and backed up before each write. The only OneDrive file the app writes is PUTER.md, and only its Daily Checklist section. Phase 3 check/hide state is unchanged. This Week writes, Goals writes, offline capture, and the conversational brain are later phases — see `docs/ROADMAP.md`.
+
+**v0.3.2** fixes the daily-state rollover to resolve the 4am day boundary in `PUTER_TZ` (DST-aware, via `Intl`) instead of UTC; strips contextual `<!-- ... -->` notes from rendered Goals; and renders This Week's sub-sections (Recurring / Tasks for Goals / Hobbies / Other) read-only.

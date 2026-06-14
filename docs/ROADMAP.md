@@ -1,7 +1,7 @@
 # P.U.T.E.R. — Software Roadmap
 ### From living document to conversational system
 **Operator:** Jacob Zolda
-**Version:** 0.4
+**Version:** 0.5
 **Status:** Living document
 
 ---
@@ -104,6 +104,7 @@ Current build status lives in the latest entry of `PUTER_APP_BUILD_LOG.md` — t
 ---
 
 ## Changelog
+- **v0.5** — App v0.3.2 patch: fixed the daily-state rollover (now resolves the 4 AM boundary in PUTER_TZ, DST-aware, instead of UTC); stripped contextual comments from rendered Goals; This Week now renders its sub-sections (Recurring / Tasks for Goals / Hobbies / Other) read-only — full This Week write-enabling remains Phase 4. PUTER.md → v0.8.1 (Morning blocks merged, Building task type removed, This Week restructured).
 - **v0.4** — Phase 3.5 shipped (app v0.3.1). Daily Checklist structural editing live: add, text-edit, reorder, delete — with surgical writes, fingerprint guard, atomic backups. This Week write-enabling deferred to Phase 4.
 - **v0.3** — Phase 3 shipped (app v0.3.0). "Where we are now" advanced to complete; next milestone is Phase 3.5. Corrected the SQLite line to reflect its deferral past Phase 3.
 - **v0.2** — Phase 3 redefined around Path B: check/hide state in an app-owned daily-state file, PUTER.md as a stable-ID template, no daily-log writes. SQLite and offline-capture deferred (their justification was logging, which stays in Bear). Added Phase 3.5 for structural editing of PUTER.md. Updated "Where we are now" to reflect Phase 2 complete.

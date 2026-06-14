@@ -12,23 +12,30 @@ export default function ThisWeek({ data, loading, error }) {
             Week of: <span>{data.weekOf || '—'}</span>
           </p>
 
-          {data.items.length === 0 ? (
+          {data.sections.every(s => s.items.length === 0) ? (
             <p className="state-empty">No items set for this week.</p>
           ) : (
-            <ul className="checklist">
-              {data.items.map((item, i) => (
-                <li key={i} className={`checklist-item${item.checked ? ' is-checked' : ''}`}>
-                  <input
-                    type="checkbox"
-                    checked={item.checked}
-                    readOnly
-                    aria-label={item.text}
-                    tabIndex={-1}
-                  />
-                  <span className="item-text">{item.text}</span>
-                </li>
-              ))}
-            </ul>
+            data.sections.map((section, i) => (
+              section.items.length === 0 ? null : (
+                <div key={i} className="subsection">
+                  {section.title && <h3 className="subsection-title">{section.title}</h3>}
+                  <ul className="checklist">
+                    {section.items.map((item, j) => (
+                      <li key={j} className={`checklist-item${item.checked ? ' is-checked' : ''}`}>
+                        <input
+                          type="checkbox"
+                          checked={item.checked}
+                          readOnly
+                          aria-label={item.text}
+                          tabIndex={-1}
+                        />
+                        <span className="item-text">{item.text}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )
+            ))
           )}
 
           {data.parseWarnings.length > 0 && (
