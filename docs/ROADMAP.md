@@ -1,7 +1,7 @@
 # P.U.T.E.R. — Software Roadmap
 ### From living document to conversational system
 **Operator:** Jacob Zolda
-**Version:** 0.6
+**Version:** 0.7
 **Status:** Living document
 
 ---
@@ -10,9 +10,9 @@
 
 This file is the long-term path for turning P.U.T.E.R. from markdown files into working software Jacob can use on his PC and phone. It keeps everyone — Jacob, the Claude.ai project, and Claude Code — pointed at the same destination, built brick by brick.
 
-It complements the other two files without duplicating them:
+It complements the system and data files without duplicating them:
 - `PUTER.md` — the *system* (mission, principles, goals, checklists).
-- `PUTER_DailyLog.md` — the *data* (daily activity).
+- `PUTER_DailyLog_[Month].md` — the *data* (daily activity; one file per month, e.g. `PUTER_DailyLog_June.md`).
 - `ROADMAP.md` — the *build path* (this file): how the software gets made, in order.
 
 ---
@@ -21,7 +21,7 @@ It complements the other two files without duplicating them:
 
 P.U.T.E.R. now has two independent version numbers:
 
-- **Document version** — `PUTER.md` (currently v0.8.3). Tracks the system's rules and structure.
+- **Document version** — `PUTER.md` (currently v0.8.4). Tracks the system's rules and structure.
 - **Software version** — the app. Stays **v0.x** until it reaches **v1**.
 
 **v1 is earned, not assigned.** The app is v1 only when it is **conversational, running on a local model, on the always-on machine.** Everything before that — dashboard, capture, reminders, even Claude wired in as an assist — is foundation, and stays v0.x.
@@ -82,7 +82,7 @@ So they are never an expensive retrofit:
 
 ### Phase 3.5 — Structural editing of PUTER.md ✓ done (v0.3.1)
 - **Goal:** Edit the template itself from the app.
-- **Scope:** Reorder checklist items, add a new item, edit an item's text, delete an item — written safely back to PUTER.md. Surgical edits only (target line by ID, every other byte identical). Optimistic concurrency via mtime+hash fingerprint; atomic write with timestamped backups. This Week write-enabling deferred to Phase 4.
+- **Scope:** Reorder checklist items, add a new item, edit an item's text, delete an item — written safely back to PUTER.md. Surgical edits only (target line by ID, every other byte identical). Optimistic concurrency via mtime+hash fingerprint; atomic write with timestamped backups. This Week write-enabling deferred to Phase 4.5.
 - **Done when:** Jacob can reshape the Daily Checklist from the app without opening VS Code. ✓
 
 ### Phase 4 — Always-on box + self-hosted sync
@@ -99,6 +99,11 @@ So they are never an expensive retrofit:
   7. Monitoring
 - **Done when:** Every device reaches P.U.T.E.R. from anywhere, and sensitive data is self-hosted.
 
+### Phase 4.5 — Write-enabled This Week
+- **Goal:** Run the week from the app, not just view it.
+- **Scope:** Check/uncheck This Week items from PC or phone, then add, edit, and delete them — the Daily Checklist's write features (Phases 3 and 3.5) carried over to This Week. Two design decisions come first: where weekly check state lives and how it resets (a weekly cadence tied to the Weekly Review, not the 4am daily rollover), and how transient weekly items are identified (they carry no stable IDs). Sequenced after Phase 4 so the write path is designed once, against the settled host and sync.
+- **Done when:** Jacob can run and refresh This Week from the app without opening VS Code.
+
 ### Phase 5 — The brain → v1
 - **Goal:** Conversational P.U.T.E.R. on a local model. **The finish line.**
 - **Scope:** Wire in the model interface (Anthropic Messages API). Claude as brain first, then swap the endpoint to a local open model on the box. Add the conversational interface and command box.
@@ -113,6 +118,7 @@ Current build status lives in the latest entry of `PUTER_APP_BUILD_LOG.md` — t
 ---
 
 ## Changelog
+- **v0.7** — Gave This Week write-enabling a home: new Phase 4.5. It had been "deferred to Phase 4" since v0.4, but Phase 4's stages are all host and sync work, so it had no block of its own. Purpose now names the monthly log files (`PUTER_DailyLog_[Month].md`) in place of the single `PUTER_DailyLog.md`. PUTER.md → v0.8.4 (goals refreshed; ADZ and TYP added). No app version change.
 - **v0.6** — Phase 4 started on a stopgap host: MSI GE72 2QF laptop running Ubuntu Server 26.04 LTS. Added the seven-stage plan to Phase 4; Stages 1–2 (hardware prep, OS install + headless config) are complete. No app version change. Details in `PUTER_APP_BUILD_LOG.md`.
 - **v0.5** — App v0.3.2 patch: fixed the daily-state rollover (now resolves the 4 AM boundary in PUTER_TZ, DST-aware, instead of UTC); stripped contextual comments from rendered Goals; This Week now renders its sub-sections (Recurring / Tasks for Goals / Hobbies / Other) read-only — full This Week write-enabling remains Phase 4. PUTER.md → v0.8.1 (Morning blocks merged, Building task type removed, This Week restructured).
 - **v0.4** — Phase 3.5 shipped (app v0.3.1). Daily Checklist structural editing live: add, text-edit, reorder, delete — with surgical writes, fingerprint guard, atomic backups. This Week write-enabling deferred to Phase 4.
