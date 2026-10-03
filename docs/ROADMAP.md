@@ -1,7 +1,7 @@
 # P.U.T.E.R. — Software Roadmap
 ### From living document to conversational system
 **Operator:** Jacob Zolda
-**Version:** 0.5
+**Version:** 0.6
 **Status:** Living document
 
 ---
@@ -21,7 +21,7 @@ It complements the other two files without duplicating them:
 
 P.U.T.E.R. now has two independent version numbers:
 
-- **Document version** — `PUTER.md` (currently v0.8.1). Tracks the system's rules and structure.
+- **Document version** — `PUTER.md` (currently v0.8.3). Tracks the system's rules and structure.
 - **Software version** — the app. Stays **v0.x** until it reaches **v1**.
 
 **v1 is earned, not assigned.** The app is v1 only when it is **conversational, running on a local model, on the always-on machine.** Everything before that — dashboard, capture, reminders, even Claude wired in as an assist — is foundation, and stays v0.x.
@@ -86,8 +86,17 @@ So they are never an expensive retrofit:
 - **Done when:** Jacob can reshape the Daily Checklist from the app without opening VS Code. ✓
 
 ### Phase 4 — Always-on box + self-hosted sync
-- **Goal:** Always available, privacy-first. *(Begins with a new chat for the PC build; cross-ref **PCB** / **FIN**.)*
+- **Goal:** Always available, privacy-first. *(Runs first on a stopgap laptop server; cross-ref **SRV**. The dedicated build stays with **PCB** / **FIN**.)*
 - **Scope:** Stand up the always-on machine. Move the app onto it (served 24/7, reachable anywhere). Migrate sync from OneDrive to Syncthing.
+- **Stopgap host:** MSI GE72 2QF laptop, headless, running Ubuntu Server 26.04 LTS on the GA kernel. The stack (Docker, Syncthing, Ollama) is chosen to transfer 1:1 to the dedicated machine.
+- **Stages:**
+  1. Hardware prep ✓
+  2. OS install + headless config ✓
+  3. Docker + P.U.T.E.R. app as a service
+  4. Remote access + reverse proxy
+  5. Syncthing + OneDrive migration
+  6. Ollama + NVIDIA drivers
+  7. Monitoring
 - **Done when:** Every device reaches P.U.T.E.R. from anywhere, and sensitive data is self-hosted.
 
 ### Phase 5 — The brain → v1
@@ -104,6 +113,7 @@ Current build status lives in the latest entry of `PUTER_APP_BUILD_LOG.md` — t
 ---
 
 ## Changelog
+- **v0.6** — Phase 4 started on a stopgap host: MSI GE72 2QF laptop running Ubuntu Server 26.04 LTS. Added the seven-stage plan to Phase 4; Stages 1–2 (hardware prep, OS install + headless config) are complete. No app version change. Details in `PUTER_APP_BUILD_LOG.md`.
 - **v0.5** — App v0.3.2 patch: fixed the daily-state rollover (now resolves the 4 AM boundary in PUTER_TZ, DST-aware, instead of UTC); stripped contextual comments from rendered Goals; This Week now renders its sub-sections (Recurring / Tasks for Goals / Hobbies / Other) read-only — full This Week write-enabling remains Phase 4. PUTER.md → v0.8.1 (Morning blocks merged, Building task type removed, This Week restructured).
 - **v0.4** — Phase 3.5 shipped (app v0.3.1). Daily Checklist structural editing live: add, text-edit, reorder, delete — with surgical writes, fingerprint guard, atomic backups. This Week write-enabling deferred to Phase 4.
 - **v0.3** — Phase 3 shipped (app v0.3.0). "Where we are now" advanced to complete; next milestone is Phase 3.5. Corrected the SQLite line to reflect its deferral past Phase 3.
