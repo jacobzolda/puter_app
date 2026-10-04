@@ -1,4 +1,4 @@
-# Stage 1 : build the React Client
+# Stage 1: build the React client
 FROM node:24-slim AS build
 WORKDIR /app/client
 COPY client/package.json client/package-lock.json ./
