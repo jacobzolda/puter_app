@@ -2,7 +2,7 @@
 FROM node:24-slim AS build
 WORKDIR /app/client
 COPY client/package.json client/package-lock.json ./
-RUN npm client
+RUN npm ci
 COPY client/ ./
 RUN npm run build
 
