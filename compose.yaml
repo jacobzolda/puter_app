@@ -12,11 +12,20 @@ services:
       - ${PUTER_HOME}/data:/data
       - ${PUTER_HOME}/state:/app/server/state
       - ${PUTER_HOME}/backups:/app/server/backups
-    ports:
-      - "0.0.0.0:3001:3001"
     healthcheck:
       test: ["CMD", "node", "server/healthcheck.js"]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 10s
+
+  proxy:
+    image: nginx:stable
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    volumes:
+      - ./nginx:/etc/nginx/conf.d:ro
+    ports:
+      - "0.0.0.0:80:80"
