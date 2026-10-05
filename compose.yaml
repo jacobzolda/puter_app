@@ -27,5 +27,7 @@ services:
         condition: service_healthy
     volumes:
       - ./nginx:/etc/nginx/conf.d:ro
+      - ${PUTER_HOME}/certs:/etc/nginx/certs:ro
     ports:
       - "0.0.0.0:80:80"
+      - "0.0.0.0:443:443"
