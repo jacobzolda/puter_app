@@ -20,6 +20,8 @@ function emptyState(day) {
 }
 
 function writeState(state) {
+  // server/state/ is git-ignored, so a fresh clone does not have it yet.
+  fs.mkdirSync(path.dirname(STATE_FILE), { recursive: true });
   fs.writeFileSync(TMP_FILE, JSON.stringify(state, null, 2), 'utf8');
   fs.renameSync(TMP_FILE, STATE_FILE);
 }

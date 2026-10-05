@@ -1,7 +1,7 @@
 # P.U.T.E.R. — Software Roadmap
 ### From living document to conversational system
 **Operator:** Jacob Zolda
-**Version:** 0.7
+**Version:** 0.8
 **Status:** Living document
 
 ---
@@ -38,6 +38,7 @@ These are locked unless Jacob revises them. The reasoning lives in the project c
 4. **The brain is a swappable seam.** The app talks to an endpoint that speaks the Anthropic Messages API. That endpoint is Claude (cloud) at first and a local open model (via Ollama, on the always-on box) later. Swapping the brain means swapping the endpoint, not rewriting the app.
 5. **The host evolves; the app does not.** Backend runs on Jacob's PC now, and moves to a dedicated always-on machine later. Same app throughout.
 6. **Sync evolves toward privacy-first.** OneDrive now (nothing sensitive yet). Self-hosted Syncthing once the always-on box exists and sensitive data is in play.
+7. **Private by network.** The app has no login; it is reachable only through a self-hosted WireGuard tunnel, behind nginx, over HTTPS from a private certificate authority.
 
 ---
 
@@ -59,6 +60,8 @@ So they are never an expensive retrofit:
 - **Derived index:** SQLite, introduced only when a query actually needs it — deferred past Phase 3 (its original justification was log filtering, which stays in Bear).
 - **Markdown layer:** parse the canonical files; tolerate human edits.
 - **Version control:** the app lives in its own local git repository, kept **outside** the OneDrive-synced folder to avoid git/OneDrive conflicts.
+- **Hosting:** Docker Compose on the always-on box. The app runs in one container and nginx, the reverse proxy, in a second.
+- **Remote access:** a self-hosted WireGuard tunnel to the box. HTTPS inside it comes from a private certificate authority.
 - **Model runner (later):** Ollama on the always-on box, speaking the Anthropic Messages API.
 
 ---
@@ -92,8 +95,8 @@ So they are never an expensive retrofit:
 - **Stages:**
   1. Hardware prep ✓
   2. OS install + headless config ✓
-  3. Docker + P.U.T.E.R. app as a service
-  4. Remote access + reverse proxy
+  3. Docker + P.U.T.E.R. app as a service ✓
+  4. Remote access + reverse proxy ✓
   5. Syncthing + OneDrive migration
   6. Ollama + NVIDIA drivers
   7. Monitoring
@@ -118,6 +121,7 @@ Current build status lives in the latest entry of `PUTER_APP_BUILD_LOG.md` — t
 ---
 
 ## Changelog
+- **v0.8** — Phase 4 Stages 3–4 complete (app v0.4.0). The app runs in Docker on the stopgap server, behind an nginx reverse proxy, published on the address of a self-hosted WireGuard tunnel, over HTTPS from a private certificate authority. New settled decision 7 (private by network). Hosting and remote access added to the tech stack. No PUTER.md change. Details in `PUTER_APP_BUILD_LOG.md`.
 - **v0.7** — Gave This Week write-enabling a home: new Phase 4.5. It had been "deferred to Phase 4" since v0.4, but Phase 4's stages are all host and sync work, so it had no block of its own. Purpose now names the monthly log files (`PUTER_DailyLog_[Month].md`) in place of the single `PUTER_DailyLog.md`. PUTER.md → v0.8.4 (goals refreshed; ADZ and TYP added). No app version change.
 - **v0.6** — Phase 4 started on a stopgap host: MSI GE72 2QF laptop running Ubuntu Server 26.04 LTS. Added the seven-stage plan to Phase 4; Stages 1–2 (hardware prep, OS install + headless config) are complete. No app version change. Details in `PUTER_APP_BUILD_LOG.md`.
 - **v0.5** — App v0.3.2 patch: fixed the daily-state rollover (now resolves the 4 AM boundary in PUTER_TZ, DST-aware, instead of UTC); stripped contextual comments from rendered Goals; This Week now renders its sub-sections (Recurring / Tasks for Goals / Hobbies / Other) read-only — full This Week write-enabling remains Phase 4. PUTER.md → v0.8.1 (Morning blocks merged, Building task type removed, This Week restructured).

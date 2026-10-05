@@ -2,10 +2,10 @@
 
 require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
 const os = require('os');
 const path = require('path');
 const fs = require('fs');
+const { version } = require('../package.json');
 const { parsePuterMd } = require('./parser');
 const { readState, setChecked, setHidden, removeIdFromState } = require('./state');
 const { performEdit, getFileFingerprint } = require('./editor');
@@ -13,6 +13,8 @@ const { performEdit, getFileFingerprint } = require('./editor');
 const app = express();
 const PORT = process.env.PORT || 3001;
 const PUTER_DIR = process.env.PUTER_DIR;
+// Optional. The address people open to reach the app; printed at startup, display only.
+const PUTER_URL = process.env.PUTER_URL;
 
 if (!PUTER_DIR) {
   console.error('ERROR: PUTER_DIR is not set. Copy .env.example to .env and set the path.');
@@ -40,8 +42,12 @@ function getLANAddresses() {
 const clientDist = path.join(__dirname, '..', 'client', 'dist');
 const serveStatic = fs.existsSync(clientDist);
 
-app.use(cors());
 app.use(express.json());
+
+// Log unexpected failures so they reach the terminal or `docker compose logs app`.
+function logFailure(req, e) {
+  console.error(`${req.method} ${req.path} failed: ${e.message}`);
+}
 
 if (serveStatic) {
   app.use(express.static(clientDist));
@@ -96,6 +102,7 @@ app.get('/api/state', (req, res) => {
   try {
     res.json(readState());
   } catch (e) {
+    logFailure(req, e);
     res.status(500).json({ error: e.message });
   }
 });
@@ -109,6 +116,7 @@ app.put('/api/state/check', (req, res) => {
   try {
     res.json(setChecked(id, value));
   } catch (e) {
+    logFailure(req, e);
     res.status(500).json({ error: e.message });
   }
 });
@@ -122,6 +130,7 @@ app.put('/api/state/hide', (req, res) => {
   try {
     res.json(setHidden(id, value));
   } catch (e) {
+    logFailure(req, e);
     res.status(500).json({ error: e.message });
   }
 });
@@ -153,8 +162,10 @@ function buildDailyResponse(fingerprint) {
 }
 
 // Shared error handler for structure endpoints.
-function handleEditError(e, res) {
+// A conflict is an expected outcome, not a failure, so it is not logged.
+function handleEditError(e, req, res) {
   if (e.conflict) return res.status(409).json({ conflict: true, reload: true });
+  logFailure(req, e);
   if (e.notFound) return res.status(404).json({ error: e.message });
   return res.status(500).json({ error: e.message });
 }
@@ -172,7 +183,7 @@ app.post('/api/structure/add', (req, res) => {
     const result = performEdit(PUTER_MD, fp, 'add', { section, text: text.trim() });
     res.json({ ...buildDailyResponse(result.fingerprint), newId: result.newId });
   } catch (e) {
-    handleEditError(e, res);
+    handleEditError(e, req, res);
   }
 });
 
@@ -188,7 +199,7 @@ app.put('/api/structure/text', (req, res) => {
     const result = performEdit(PUTER_MD, fp, 'text', { id, text: text.trim() });
     res.json(buildDailyResponse(result.fingerprint));
   } catch (e) {
-    handleEditError(e, res);
+    handleEditError(e, req, res);
   }
 });
 
@@ -204,7 +215,7 @@ app.put('/api/structure/reorder', (req, res) => {
     const result = performEdit(PUTER_MD, fp, 'reorder', { id, direction });
     res.json(buildDailyResponse(result.fingerprint));
   } catch (e) {
-    handleEditError(e, res);
+    handleEditError(e, req, res);
   }
 });
 
@@ -222,7 +233,7 @@ app.delete('/api/structure/item', (req, res) => {
     try { removeIdFromState(id); } catch {}
     res.json(buildDailyResponse(result.fingerprint));
   } catch (e) {
-    handleEditError(e, res);
+    handleEditError(e, req, res);
   }
 });
 
@@ -233,21 +244,29 @@ if (serveStatic) {
   });
 }
 
-// Binds to 0.0.0.0 so the phone can reach this server over the LAN.
-// Phase 3.5 introduces PUTER.md writes — see security note in README.md.
+// Binds to 0.0.0.0: on a PC so the phone can reach it over the LAN, in a container
+// so the reverse proxy can reach it. What the network can reach is decided outside
+// this file — see the security note in README.md.
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`\nP.U.T.E.R. v0.3.2`);
+  console.log(`\nP.U.T.E.R. v${version}`);
   if (serveStatic) {
     console.log(`  Mode:    serve (built frontend + API, one origin)`);
   } else {
     console.log(`  Mode:    API only (run "npm run serve" or build client first for phone use)`);
   }
-  console.log(`  Local:   http://localhost:${PORT}`);
-  const lanIPs = getLANAddresses();
-  if (lanIPs.length > 0) {
-    console.log(`  Network (use on phone):`);
-    for (const ip of lanIPs) {
-      console.log(`    http://${ip}:${PORT}`);
+  if (PUTER_URL) {
+    // The configured address. Guessing from this machine's interfaces would be
+    // wrong behind a proxy or inside a container.
+    console.log(`  Address: ${PUTER_URL}`);
+    console.log(`  Port:    ${PORT}`);
+  } else {
+    console.log(`  Local:   http://localhost:${PORT}`);
+    const lanIPs = getLANAddresses();
+    if (lanIPs.length > 0) {
+      console.log(`  Network (use on phone):`);
+      for (const ip of lanIPs) {
+        console.log(`    http://${ip}:${PORT}`);
+      }
     }
   }
   console.log(`  PUTER_DIR: ${PUTER_DIR}\n`);

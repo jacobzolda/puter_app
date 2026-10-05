@@ -8,6 +8,7 @@ services:
     environment:
       PUTER_DIR: /data
       PUTER_TZ: ${PUTER_TZ:-America/New_York}
+      PUTER_URL: ${PUTER_URL:-}
     volumes:
       - ${PUTER_HOME}/data:/data
       - ${PUTER_HOME}/state:/app/server/state

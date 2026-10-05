@@ -1,6 +1,6 @@
 {
   "name": "puter-app",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "P.U.T.E.R. — local read-only dashboard, installable PWA",
   "private": true,
   "scripts": {
@@ -13,10 +13,11 @@
     "gen:icons": "node scripts/gen-icons.js"
   },
   "dependencies": {
-    "concurrently": "^9.1.2",
-    "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
   },
   "engines": {
     "node": ">=18"

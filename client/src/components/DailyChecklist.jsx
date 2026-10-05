@@ -2,12 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 
 export default function DailyChecklist({
   data, loading, error,
-  dailyState, onUpdateState,
+  dailyState, stateError, onUpdateState,
   onStructureEdit, onReload,
 }) {
   const [manageMode, setManageMode] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [conflict, setConflict] = useState(false);
+  const [editError, setEditError] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
 
   // Local optimistic copy of checked/hidden for Phase 3 interactions.
@@ -107,6 +108,7 @@ export default function DailyChecklist({
     setDrafts(d);
     setAddDrafts({});
     setConflict(false);
+    setEditError(null);
     setEditMode(true);
     setManageMode(false);
   }
@@ -116,10 +118,19 @@ export default function DailyChecklist({
     setDrafts({});
     setAddDrafts({});
     setConflict(false);
+    setEditError(null);
+  }
+
+  // A structural edit failed. A conflict gets the reload banner; anything else
+  // (a folder the server cannot write to, a dropped connection) is shown as-is.
+  function reportEditFailure(e) {
+    if (e.conflict) setConflict(true);
+    else setEditError(e.message || 'unknown error');
   }
 
   function handleReloadAfterConflict() {
     setConflict(false);
+    setEditError(null);
     setEditMode(false);
     setDrafts({});
     setAddDrafts({});
@@ -134,14 +145,14 @@ export default function DailyChecklist({
 
     const trimmed = draft.trim();
     setIsSaving(true);
+    setEditError(null);
     try {
       await onStructureEdit('text', { id, text: trimmed });
       savedTextsRef.current[id] = trimmed;
       setDrafts(d => ({ ...d, [id]: trimmed }));
     } catch (e) {
-      if (e.conflict) {
-        setConflict(true);
-      } else {
+      reportEditFailure(e);
+      if (!e.conflict) {
         // Revert draft to last confirmed saved text
         setDrafts(d => ({ ...d, [id]: lastSaved }));
       }
@@ -153,10 +164,11 @@ export default function DailyChecklist({
   async function handleReorder(id, direction) {
     if (isSaving) return;
     setIsSaving(true);
+    setEditError(null);
     try {
       await onStructureEdit('reorder', { id, direction });
     } catch (e) {
-      if (e.conflict) setConflict(true);
+      reportEditFailure(e);
     } finally {
       setIsSaving(false);
     }
@@ -166,12 +178,13 @@ export default function DailyChecklist({
     if (isSaving) return;
     if (!window.confirm(`Delete "${text}"?`)) return;
     setIsSaving(true);
+    setEditError(null);
     try {
       await onStructureEdit('delete', { id });
       setDrafts(d => { const n = { ...d }; delete n[id]; return n; });
       delete savedTextsRef.current[id];
     } catch (e) {
-      if (e.conflict) setConflict(true);
+      reportEditFailure(e);
     } finally {
       setIsSaving(false);
     }
@@ -182,6 +195,7 @@ export default function DailyChecklist({
     const text = (addDrafts[sectionName] ?? '').trim();
     if (!text) return;
     setIsSaving(true);
+    setEditError(null);
     try {
       const result = await onStructureEdit('add', { section: sectionName, text });
       setAddDrafts(d => ({ ...d, [sectionName]: '' }));
@@ -190,7 +204,7 @@ export default function DailyChecklist({
         savedTextsRef.current[result.newId] = text;
       }
     } catch (e) {
-      if (e.conflict) setConflict(true);
+      reportEditFailure(e);
     } finally {
       setIsSaving(false);
     }
@@ -238,8 +252,22 @@ export default function DailyChecklist({
         </div>
       )}
 
+      {editError && (
+        <div className="error-banner" role="alert">
+          <span>Save failed: {editError}</span>
+          <button type="button" className="conflict-reload-btn" onClick={() => setEditError(null)}>
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {loading && <p className="state-loading">Loading…</p>}
       {error && <p className="state-warning">Could not load daily checklist: {error}</p>}
+      {stateError && (
+        <p className="state-warning" role="alert">
+          Could not load today's check state, so the boxes are disabled: {stateError}
+        </p>
+      )}
 
       {data && data.sections.length === 0 && (
         <p className="state-empty">No checklist sections found.</p>

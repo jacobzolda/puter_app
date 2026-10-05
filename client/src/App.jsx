@@ -52,9 +52,12 @@ export default function App() {
   const goals = useApi('/api/goals');
 
   const [dailyState, setDailyState] = useState(null);
+  const [stateError, setStateError] = useState(null);
 
   useEffect(() => {
-    fetchJson('/api/state').then(setDailyState).catch(() => {});
+    fetchJson('/api/state')
+      .then(setDailyState)
+      .catch(e => setStateError(e.error || e.message));
   }, []);
 
   const updateDailyState = useCallback(async (endpoint, id, value) => {
@@ -121,7 +124,7 @@ export default function App() {
     mainContent = (
       <div className="offline-state" role="status" aria-live="polite">
         <p className="offline-title">Can't reach P.U.T.E.R.</p>
-        <p className="offline-message">Is the PC on and connected to the same Wi-Fi?</p>
+        <p className="offline-message">Is the server on, and is this device's tunnel connected?</p>
       </div>
     );
   } else if (serverUp === null) {
@@ -132,6 +135,7 @@ export default function App() {
         <DailyChecklist
           {...daily}
           dailyState={dailyState}
+          stateError={stateError}
           onUpdateState={updateDailyState}
           onStructureEdit={onStructureEdit}
           onReload={onReload}

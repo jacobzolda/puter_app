@@ -113,4 +113,38 @@ The Goals parser now removes `<!-- ... -->` spans (including the italic `<!-- *n
 ### This Week parses bold sub-headers into groups
 `parseThisWeek` now mirrors the Daily Checklist's bold-header grouping: a line that is only `**Text**` starts a new sub-section, and checkbox items collect under it. Items before the first header land in an untitled group. Trailing inline comments (e.g. `<!-- FIT -->`) are stripped from item text, same as the Daily convention. `GET /api/week` now returns `{ weekOf, sections: [{ title, items: [{ text, checked }] }] }` instead of a flat `items[]`; `ThisWeek.jsx` renders each section with a header, still read-only. The `### Weekly Review` guard remains as defensive code.
 
-*Parser notes: Phase 1 (v0.1.0). PWA notes: Phase 2 (v0.2.0). Daily-state/ID notes: Phase 3 (v0.3.0). Structural-write notes: Phase 3.5 (v0.3.1). Rollover/Goals/This Week notes: Phase 3.6 (v0.3.2). Update this file if `PUTER.md` formatting or the PWA strategy changes significantly.*
+---
+
+## Phase 4 — Container, proxy and access assumptions (v0.4.0)
+
+### Two containers, one door
+`compose.yaml` runs the app (`app`, built from `Dockerfile`) and nginx (`proxy`). The app publishes no port. nginx reaches it at `http://app:3001` over Compose's private network and is the only container with published ports. The app's `0.0.0.0` bind now means the container's own interfaces.
+
+### Data lives outside the container
+Three host folders under `PUTER_HOME` are mounted into the app: `data` → `/data` (`PUTER_DIR`), `state` → `/app/server/state`, `backups` → `/app/server/backups`. The container itself is disposable. The app runs as the image's `node` user (UID 1000) and assumes those folders belong to UID 1000 on the host, with owner write permission on the folder itself and not only on the files: every write is a temp file followed by a rename, and both are controlled by the folder. A read-only `data` folder fails with `EACCES … PUTER.md.tmp`.
+
+### nginx looks the app up per request
+`resolver 127.0.0.11` plus a variable in `proxy_pass` make nginx resolve the name `app` as requests arrive, through Docker's built-in DNS, instead of once at startup. nginx therefore starts whether or not the app is up, and follows the app when its container is recreated. Each port has a single `server` block, which makes that block the default: it answers whatever name or address was used. `server_name _` is only a placeholder name that matches nothing.
+
+### The bind address, and its limit
+The proxy's ports are published on `PUTER_BIND` only, and Compose refuses to start when it is unset (`${PUTER_BIND:?}`). The bind address decides which of the host's addresses answers. It does not check which interface a packet arrived on: Docker forwards anything addressed to the bound address, so a device on another of the host's networks that routes that address to the host still gets through. Restricting by interface takes a packet-filter rule that runs ahead of Docker's own, such as a drop in the `raw` table for traffic to the bound address arriving on the wrong interface. `ufw`'s ordinary rules do not apply, because Docker handles published ports before they see the traffic.
+
+### Start order
+If the bind address belongs to an interface that appears after boot (a VPN tunnel), Docker has to start after it. Otherwise the proxy fails with `cannot assign requested address` and is left without ports until it is recreated (`docker compose up -d --force-recreate proxy`); a plain restart is not enough.
+
+### HTTPS and certificate files
+nginx terminates TLS (1.2 and 1.3) with `server.crt` and `server.key` from `${PUTER_HOME}/certs`, mounted read-only. Port 80 serves exactly one file, `/ca.crt` (the certificate authority's public certificate, so a new device can fetch it), and redirects everything else to HTTPS. nginx's worker processes are unprivileged, so the `certs` folder and the two `.crt` files must be world-readable (755 and 644). The key stays 600; only nginx's root-owned main process reads it. The server certificate must list the address or name people open in its `subjectAltName`.
+
+### Health check and restart
+`server/healthcheck.js` calls `/api/health` from inside the container every 30 seconds, and the proxy waits for it at start (`depends_on: condition: service_healthy`). `restart: unless-stopped`, together with Docker starting at boot, is what makes the app a service. `init: true` gives Node a first process that forwards stop signals.
+
+### Startup banner and version
+The version is read from `package.json`, the only place it is written. When `PUTER_URL` is set the banner prints it as the app's address. Without it the banner falls back to listing the machine's own interfaces, which inside a container are internal addresses nobody can open.
+
+### No CORS
+`cors()` was removed. Serve mode and the container are one origin, and dev mode goes through the Vite proxy, so nothing needed it. With no login, an `Access-Control-Allow-Origin: *` header would have let any web page open in the user's browser read and edit through the API.
+
+### Failures are visible
+A structural edit that fails for any reason other than a conflict shows a "Save failed: …" banner carrying the server's message. A failed load of the daily state shows a warning, and the boxes stay disabled. The server logs every failed state or structure request as `METHOD path failed: message`; a 409 conflict is an expected outcome and is not logged. `server/state/` is created on the first write when it is missing, as `server/backups/` already was.
+
+*Parser notes: Phase 1 (v0.1.0). PWA notes: Phase 2 (v0.2.0). Daily-state/ID notes: Phase 3 (v0.3.0). Structural-write notes: Phase 3.5 (v0.3.1). Rollover/Goals/This Week notes: Phase 3.6 (v0.3.2). Container/proxy/access notes: Phase 4 (v0.4.0). Update this file if `PUTER.md` formatting, the PWA strategy, or the deployment changes significantly.*
