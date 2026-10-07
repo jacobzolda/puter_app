@@ -21,7 +21,7 @@ It complements the system and data files without duplicating them:
 
 P.U.T.E.R. now has two independent version numbers:
 
-- **Document version** — `PUTER.md` (currently v0.8.4). Tracks the system's rules and structure.
+- **Document version** — `PUTER.md` (currently v0.8.5). Tracks the system's rules and structure.
 - **Software version** — the app. Stays **v0.x** until it reaches **v1**.
 
 **v1 is earned, not assigned.** The app is v1 only when it is **conversational, running on a local model, on the always-on machine.** Everything before that — dashboard, capture, reminders, even Claude wired in as an assist — is foundation, and stays v0.x.
@@ -122,7 +122,7 @@ Current build status lives in the latest entry of `PUTER_APP_BUILD_LOG.md` — t
 ---
 
 ## Changelog
-- **v0.9** — Phase 4 Stage 5 complete (app v0.4.1). The P.U.T.E.R. folder left OneDrive: Syncthing now keeps it in step between the server, the PC and the iPhone, with a year of old versions kept on the server. Settled decision 6 reworded from a plan to the current state. Sync added to the tech stack. A packet rule on the server closes the home-network gap noted at Stage 4. App v0.4.1 accepts Windows line endings in PUTER.md. Details in `PUTER_APP_BUILD_LOG.md`.
+- **v0.9** — Phase 4 Stage 5 complete (app v0.4.1). The P.U.T.E.R. folder left OneDrive: Syncthing now keeps it in step between the server, the PC and the iPhone, with a year of old versions kept on the server. Settled decision 6 reworded from a plan to the current state. Sync added to the tech stack. A packet rule on the server closes the home-network gap noted at Stage 4. App v0.4.1 accepts Windows line endings in PUTER.md. PUTER.md → v0.8.5. Details in `PUTER_APP_BUILD_LOG.md`.
 - **v0.8** — Phase 4 Stages 3–4 complete (app v0.4.0). The app runs in Docker on the stopgap server, behind an nginx reverse proxy, published on the address of a self-hosted WireGuard tunnel, over HTTPS from a private certificate authority. New settled decision 7 (private by network). Hosting and remote access added to the tech stack. No PUTER.md change. Details in `PUTER_APP_BUILD_LOG.md`.
 - **v0.7** — Gave This Week write-enabling a home: new Phase 4.5. It had been "deferred to Phase 4" since v0.4, but Phase 4's stages are all host and sync work, so it had no block of its own. Purpose now names the monthly log files (`PUTER_DailyLog_[Month].md`) in place of the single `PUTER_DailyLog.md`. PUTER.md → v0.8.4 (goals refreshed; ADZ and TYP added). No app version change.
 - **v0.6** — Phase 4 started on a stopgap host: MSI GE72 2QF laptop running Ubuntu Server 26.04 LTS. Added the seven-stage plan to Phase 4; Stages 1–2 (hardware prep, OS install + headless config) are complete. No app version change. Details in `PUTER_APP_BUILD_LOG.md`.
