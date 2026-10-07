@@ -1,6 +1,6 @@
 {
   "name": "puter-app",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "P.U.T.E.R. — local read-only dashboard, installable PWA",
   "private": true,
   "scripts": {

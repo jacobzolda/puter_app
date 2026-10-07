@@ -3,8 +3,10 @@
 const fs = require('fs');
 
 // Split raw text into top-level H2 sections: { sectionTitle: [lines] }
+// Accepts Unix (LF) and Windows (CRLF) line endings, and a leading byte-order mark.
+// Every later step works on these lines, so none of them sees a carriage return.
 function splitH2Sections(text) {
-  const lines = text.split('\n');
+  const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/);
   const sections = {};
   let current = null;
   let buf = [];

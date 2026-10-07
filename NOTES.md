@@ -147,4 +147,22 @@ The version is read from `package.json`, the only place it is written. When `PUT
 ### Failures are visible
 A structural edit that fails for any reason other than a conflict shows a "Save failed: …" banner carrying the server's message. A failed load of the daily state shows a warning, and the boxes stay disabled. The server logs every failed state or structure request as `METHOD path failed: message`; a 409 conflict is an expected outcome and is not logged. `server/state/` is created on the first write when it is missing, as `server/backups/` already was.
 
-*Parser notes: Phase 1 (v0.1.0). PWA notes: Phase 2 (v0.2.0). Daily-state/ID notes: Phase 3 (v0.3.0). Structural-write notes: Phase 3.5 (v0.3.1). Rollover/Goals/This Week notes: Phase 3.6 (v0.3.2). Container/proxy/access notes: Phase 4 (v0.4.0). Update this file if `PUTER.md` formatting, the PWA strategy, or the deployment changes significantly.*
+---
+
+## Phase 4 Stage 5 — Line endings and a synced data folder (v0.4.1)
+
+### Line endings
+`splitH2Sections` strips a leading byte-order mark and splits on `\r?\n`. Every later parsing step works on the lines it returns, so none of them sees a carriage return. Before v0.4.1 the split was on `\n` alone: with Windows (CRLF) endings every line kept a trailing `\r`, the `$`-anchored patterns stopped matching, and the dashboard loaded with empty sections and no error.
+
+The editor (`server/editor.js`) needed no change. It splits on `\n`, detects the file's ending once (`\r\n` present or not), and writes new and changed lines with that ending, so a CRLF file stays CRLF and an LF file stays LF. Item IDs are the same under either ending, because they come from the stripped line.
+
+`PUTER.md` is kept with LF endings. CRLF is tolerated, not preferred. A file that mixes the two parses correctly, and edits follow the detected ending.
+
+### The data folder may be synced
+In the server deployment the `data` folder is also a Syncthing folder, so `PUTER.md` can change underneath the app at any moment. Nothing new was needed for that: the file is read on every request, and each structural edit carries the fingerprint (mtime + hash) of the copy the page was showing, so an edit made against a copy that has since been replaced by sync is refused with a 409 and the page reloads.
+
+Syncthing replaces a file the same way the app does: it writes a temporary file in the same folder (`.syncthing.NAME.tmp`) and renames it over the original. Its own entries in the folder (`.stfolder`, and `.stversions` if in-folder versioning is ever used) are not markdown and the app does not look at them. When both sides changed a file, Syncthing keeps the loser as `NAME.sync-conflict-DATE-TIME-ID.md` beside the original; the app does not read or report those.
+
+Syncthing does not keep an old version of a file that was changed on the device itself. The server-side history of the app's own edits is therefore the app's `backups` folder; Syncthing's versions folder holds what other devices overwrote.
+
+*Parser notes: Phase 1 (v0.1.0). PWA notes: Phase 2 (v0.2.0). Daily-state/ID notes: Phase 3 (v0.3.0). Structural-write notes: Phase 3.5 (v0.3.1). Rollover/Goals/This Week notes: Phase 3.6 (v0.3.2). Container/proxy/access notes: Phase 4 (v0.4.0). Line-ending and synced-folder notes: Phase 4 Stage 5 (v0.4.1). Update this file if `PUTER.md` formatting, the PWA strategy, or the deployment changes significantly.*

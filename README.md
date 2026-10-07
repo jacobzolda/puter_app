@@ -1,4 +1,4 @@
-# P.U.T.E.R. App — v0.4.0
+# P.U.T.E.R. App — v0.4.1
 
 **P**ersonal **U**tility **T**o **E**nhance **R**elaxation — local dashboard for Jacob Zolda's life-management system, installable as a PWA on the phone.
 
@@ -9,7 +9,7 @@
 ## Prerequisites
 
 - **Node.js** 18 or later
-- The canonical **P.U.T.E.R.** folder on your machine (OneDrive or equivalent), containing `PUTER.md`
+- The canonical **P.U.T.E.R.** folder on your machine, containing `PUTER.md`. It can be a folder that a sync tool keeps in step across devices.
 - For the always-on server only: **Docker Engine** with the Compose plugin. Node is not needed on the server; it comes inside the image.
 
 ---
@@ -28,7 +28,7 @@ npm run install:all
 Copy `.env.example` to `.env` and set `PUTER_DIR`:
 
 ```env
-PUTER_DIR=C:\Users\jakez\OneDrive\PUTER
+PUTER_DIR=C:\Users\jakez\PUTER
 PORT=3001        # optional — defaults to 3001
 PUTER_TZ=America/New_York # IANA tz name — used for the 4am daily-state rollover
 ```
@@ -84,6 +84,8 @@ Everything worth keeping lives in host folders under one directory (`PUTER_HOME`
 
 The first three must belong to the user with UID 1000 (the user the app runs as inside the container), with owner write permission on the folder itself.
 
+`data/` can be a folder that a sync tool keeps in step with other devices; in the deployment this repo was built for, Syncthing does that. The app reads `PUTER.md` afresh on every request, so an edit that arrives by sync shows on the next load. Since v0.4.1 the file may use Unix or Windows line endings.
+
 Settings go in a `.env` beside `compose.yaml`. The values here are examples:
 
 ```env
@@ -124,7 +126,7 @@ The server's checkout is pull-only. Never edit files there.
 - **Android + Chrome**: "Add to Home Screen" is available; the app opens standalone (fullscreen) from the icon and the cached shell renders while the PC is off. A native install banner may or may not appear depending on Chrome's heuristics — if it doesn't, use the browser menu → "Add to Home Screen" manually.
 - **iOS + Safari**: Use **Share → Add to Home Screen**. The icon appears on the home screen and the app opens in a browser wrapper (not true standalone). The cached shell still renders offline. This is normal iOS behavior for HTTP PWAs.
 
-Whether iOS opens the icon in true standalone over the server's HTTPS address has not been checked yet. The icon is re-added from that address at the Phase 4 Stage 5 cutover.
+Over the server's HTTPS address, iOS opens the icon full screen (true standalone). Checked on an iPhone 12 Pro at the Phase 4 Stage 5 cutover.
 
 ### Steps (iOS Safari, server)
 
@@ -148,7 +150,7 @@ Whether iOS opens the icon in true standalone over the server's HTTPS address ha
 The app has **no login**. It is private only because of where it is published, so that is the part to get right.
 
 - **Server (Docker):** the app container publishes no port. Only the proxy's ports 80 and 443 are published, and only on the one host address in `PUTER_BIND`. Bind that to a private interface. In the deployment this repo was built for it is a WireGuard tunnel address: nothing on the internet can reach it, and devices on the home network have no route to it. Compose refuses to start when `PUTER_BIND` is unset, rather than fall back to every address.
-- **A bind address is not an interface filter.** Docker forwards any packet addressed to the bound address, whichever network card it arrived on. A device on the same local network that deliberately adds a route to that address can still reach the proxy. To rule that out, add a packet-filter rule on the host that drops traffic for the bound address arriving on the local-network interface. `ufw`'s ordinary rules do not help here: Docker handles published ports before they see the traffic.
+- **A bind address is not an interface filter.** Docker forwards any packet addressed to the bound address, whichever network card it arrived on. A device on the same local network that deliberately adds a route to that address can still reach the proxy. To rule that out, add a packet-filter rule on the host that drops traffic for the bound address arriving on the local-network interface. `ufw`'s ordinary rules do not help here: Docker handles published ports before they see the traffic. The deployment this repo was built for has such a rule: a small nftables table of its own, loaded at boot before Docker starts.
 - **Inside the container** the app still binds `0.0.0.0`. That now means the container's own interfaces, which is what lets the proxy reach it.
 - **`npm run serve` on a PC** binds all of the PC's network interfaces over plain HTTP, so the phone can reach it over home Wi-Fi. This is acceptable on a trusted home network only.
 - **`npm run dev`:** the Vite dev server listens on localhost only. The Express API behind it listens on all interfaces at the port in `.env`, as in serve mode.
@@ -231,3 +233,5 @@ Structure endpoints return the re-parsed Daily Checklist + new fingerprint on su
 **v0.3.2** fixes the daily-state rollover to resolve the 4am day boundary in `PUTER_TZ` (DST-aware, via `Intl`) instead of UTC; strips contextual `<!-- ... -->` notes from rendered Goals; and renders This Week's sub-sections (Recurring / Tasks for Goals / Hobbies / Other) read-only.
 
 **v0.4.0** moves the app onto an always-on server (ROADMAP Phase 4, Stages 3–4). It runs in Docker behind an nginx reverse proxy, over HTTPS from a private certificate authority, published only on a private tunnel address. No new features. The move surfaced a set of fixes: the open cross-origin header is gone; the state folder is created when missing; a structural edit that fails to save now says so on the page and in the server log, as does a failed load of the day's check state; the version comes from `package.json` alone; the startup banner prints the configured address (`PUTER_URL`); the offline message no longer asks about the PC and Wi-Fi; and `concurrently` is a dev dependency, so it no longer ships in the image.
+
+**v0.4.1** makes the parser accept Windows (CRLF) line endings and a leading byte-order mark in `PUTER.md`, as well as Unix (LF) endings. Before this, a file saved with Windows endings loaded as an empty dashboard. The fix came with ROADMAP Phase 4 Stage 5, where the P.U.T.E.R. folder left OneDrive for a folder that Syncthing keeps in step between the server, the PC and the phone. The structure-edit endpoints already kept whichever ending a file used. No new features. `proxy-addr` moves to 2.0.8 in the lockfile.
