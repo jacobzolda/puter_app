@@ -39,6 +39,8 @@ services:
     gpus: all
     environment:
       OLLAMA_NO_CLOUD: "1"
+      OLLAMA_CONTEXT_LENGTH: "8192"
+      OLLAMA_KEEP_ALIVE: "-1"
     volumes:
       - ${PUTER_HOME}/ollama:/root/.ollama
     ports:
