@@ -42,5 +42,4 @@ services:
     volumes:
       - ${PUTER_HOME}/ollama:/root/.ollama
     ports:
-      -"${PUTER_BIND:?}:11434:11434"
-      
+      - "${PUTER_BIND:?}:11434:11434"
