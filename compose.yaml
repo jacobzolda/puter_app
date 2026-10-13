@@ -32,3 +32,15 @@ services:
     ports:
       - "${PUTER_BIND:?}:80:80"
       - "${PUTER_BIND:?}:443:443"
+
+  ollama:
+    image: ollama/ollama:0.40.3
+    restart: unless-stopped
+    gpus: all
+    environment:
+      OLLAMA_NO_CLOUD: "1"
+    volumes:
+      - ${PUTER_HOME}/ollama:/root/.ollama
+    ports:
+      -"${PUTER_BIND:?}:11434:11434"
+      
