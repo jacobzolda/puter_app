@@ -165,4 +165,10 @@ Syncthing replaces a file the same way the app does: it writes a temporary file 
 
 Syncthing does not keep an old version of a file that was changed on the device itself. The server-side history of the app's own edits is therefore the app's `backups` folder; Syncthing's versions folder holds what other devices overwrote.
 
-*Parser notes: Phase 1 (v0.1.0). PWA notes: Phase 2 (v0.2.0). Daily-state/ID notes: Phase 3 (v0.3.0). Structural-write notes: Phase 3.5 (v0.3.1). Rollover/Goals/This Week notes: Phase 3.6 (v0.3.2). Container/proxy/access notes: Phase 4 (v0.4.0). Line-ending and synced-folder notes: Phase 4 Stage 5 (v0.4.1). Update this file if `PUTER.md` formatting, the PWA strategy, or the deployment changes significantly.*
+---
+
+## Phase 4 Stage 6 — The local model, for Phase 5 (no app change)
+
+**Local model (Phase 4 Stage 6).** The `ollama` service speaks the Anthropic Messages API at `/v1/messages`. Inside the Compose project it is `http://ollama:11434`; from a tunnel device, `http://` + the `PUTER_BIND` address + `:11434`. The model is `gemma4:e2b`. The context length (8,192 tokens) and keep-loaded setting are environment lines on the service, not request options. Ollama's Messages API has no `tool_choice`, no prompt caching and no token-count endpoint. Thinking can be switched off per request with `"thinking": {"type": "disabled"}`. After a restart the model loads on the first request, which took about a minute on the stopgap's hard drive; the app may send an empty preload request at startup. On the dedicated machine the plan is llama.cpp, which serves the same endpoint, so the app changes an address and a model name.
+
+*Parser notes: Phase 1 (v0.1.0). PWA notes: Phase 2 (v0.2.0). Daily-state/ID notes: Phase 3 (v0.3.0). Structural-write notes: Phase 3.5 (v0.3.1). Rollover/Goals/This Week notes: Phase 3.6 (v0.3.2). Container/proxy/access notes: Phase 4 (v0.4.0). Line-ending and synced-folder notes: Phase 4 Stage 5 (v0.4.1). Local-model notes: Phase 4 Stage 6 (no app change). Update this file if `PUTER.md` formatting, the PWA strategy, or the deployment changes significantly.*

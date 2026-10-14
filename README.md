@@ -68,10 +68,11 @@ Since v0.4.0 the phone normally uses the always-on server below. This mode remai
 
 ### Server (Docker, always on)
 
-The always-on deployment runs two containers, described in `compose.yaml`:
+The always-on deployment runs three services, described in `compose.yaml`:
 
 - **`app`** — this repo, built from `Dockerfile`. It publishes no port.
 - **`proxy`** — nginx, configured by `nginx/puter.conf`. It is the only door: it serves HTTPS and passes each request to the app over Compose's private network.
+- **`ollama`** — runs the local model (Phase 5's brain) on the server's GPU. Its image is pinned in `compose.yaml`, its models live in `${PUTER_HOME}/ollama`, and it is published on `PUTER_BIND` port 11434, with no login and its cloud features off. The app does not call it yet.
 
 Everything worth keeping lives in host folders under one directory (`PUTER_HOME`), mounted into the containers:
 
@@ -81,6 +82,7 @@ Everything worth keeping lives in host folders under one directory (`PUTER_HOME`
 | `state/` | `daily-state.json` |
 | `backups/` | `PUTER.md` backups |
 | `certs/` | `server.crt`, `server.key` and `ca.crt` for HTTPS |
+| `ollama/` | Ollama's models and settings |
 
 The first three must belong to the user with UID 1000 (the user the app runs as inside the container), with owner write permission on the folder itself.
 
@@ -89,8 +91,8 @@ The first three must belong to the user with UID 1000 (the user the app runs as 
 Settings go in a `.env` beside `compose.yaml`. The values here are examples:
 
 ```env
-PUTER_HOME=/srv/puter        # host directory holding the four folders
-PUTER_BIND=10.0.0.1          # host address the proxy listens on — required
+PUTER_HOME=/srv/puter        # host directory holding the folders above
+PUTER_BIND=10.0.0.1          # host address the proxy and Ollama listen on — required
 PUTER_URL=https://10.0.0.1   # the address you open; printed at startup
 PUTER_TZ=America/New_York
 ```
@@ -98,11 +100,11 @@ PUTER_TZ=America/New_York
 ```bash
 docker compose config          # print the file with every variable filled in
 docker compose up -d --build   # build and start in the background
-docker compose ps              # expect both Up, and the app (healthy)
+docker compose ps              # expect all three Up, and the app (healthy)
 docker compose logs app        # startup banner: version, address, PUTER_DIR
 ```
 
-Add `sudo` unless your user is in the `docker` group. Both containers restart after a crash and at boot (`restart: unless-stopped`).
+Add `sudo` unless your user is in the `docker` group. All three containers restart after a crash and at boot (`restart: unless-stopped`).
 
 **Updating:** commit and push from the PC, then on the server:
 
@@ -149,7 +151,7 @@ Over the server's HTTPS address, iOS opens the icon full screen (true standalone
 
 The app has **no login**. It is private only because of where it is published, so that is the part to get right.
 
-- **Server (Docker):** the app container publishes no port. Only the proxy's ports 80 and 443 are published, and only on the one host address in `PUTER_BIND`. Bind that to a private interface. In the deployment this repo was built for it is a WireGuard tunnel address: nothing on the internet can reach it, and devices on the home network have no route to it. Compose refuses to start when `PUTER_BIND` is unset, rather than fall back to every address.
+- **Server (Docker):** the app container publishes no port. Only the proxy's ports 80 and 443 and Ollama's port 11434 are published, and only on the one host address in `PUTER_BIND`. Bind that to a private interface. In the deployment this repo was built for it is a WireGuard tunnel address: nothing on the internet can reach it, and devices on the home network have no route to it. Compose refuses to start when `PUTER_BIND` is unset, rather than fall back to every address.
 - **A bind address is not an interface filter.** Docker forwards any packet addressed to the bound address, whichever network card it arrived on. A device on the same local network that deliberately adds a route to that address can still reach the proxy. To rule that out, add a packet-filter rule on the host that drops traffic for the bound address arriving on the local-network interface. `ufw`'s ordinary rules do not help here: Docker handles published ports before they see the traffic. The deployment this repo was built for has such a rule: a small nftables table of its own, loaded at boot before Docker starts.
 - **Inside the container** the app still binds `0.0.0.0`. That now means the container's own interfaces, which is what lets the proxy reach it.
 - **`npm run serve` on a PC** binds all of the PC's network interfaces over plain HTTP, so the phone can reach it over home Wi-Fi. This is acceptable on a trusted home network only.
@@ -198,7 +200,7 @@ puter_app/
     PHASE3_5_BUILD_PLAN.md
     ROADMAP.md
   Dockerfile       Two-stage image: build the client, then the runtime
-  compose.yaml     The app and proxy containers (server deployment)
+  compose.yaml     The app, proxy and ollama containers (server deployment)
   .dockerignore    What an image build must not copy in
   .env.example     committed — copy to .env and fill in
   NOTES.md         parser, PWA, write-safety, and deployment assumptions
