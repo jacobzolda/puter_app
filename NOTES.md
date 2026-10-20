@@ -171,4 +171,37 @@ Syncthing does not keep an old version of a file that was changed on the device 
 
 **Local model (Phase 4 Stage 6).** The `ollama` service speaks the Anthropic Messages API at `/v1/messages`. Inside the Compose project it is `http://ollama:11434`; from a tunnel device, `http://` + the `PUTER_BIND` address + `:11434`. The model is `gemma4:e2b`. The context length (8,192 tokens) and keep-loaded setting are environment lines on the service, not request options. Ollama's Messages API has no `tool_choice`, no prompt caching and no token-count endpoint. Thinking can be switched off per request with `"thinking": {"type": "disabled"}`. After a restart the model loads on the first request, which took about a minute on the stopgap's hard drive; the app may send an empty preload request at startup. On the dedicated machine the plan is llama.cpp, which serves the same endpoint, so the app changes an address and a model name.
 
-*Parser notes: Phase 1 (v0.1.0). PWA notes: Phase 2 (v0.2.0). Daily-state/ID notes: Phase 3 (v0.3.0). Structural-write notes: Phase 3.5 (v0.3.1). Rollover/Goals/This Week notes: Phase 3.6 (v0.3.2). Container/proxy/access notes: Phase 4 (v0.4.0). Line-ending and synced-folder notes: Phase 4 Stage 5 (v0.4.1). Local-model notes: Phase 4 Stage 6 (no app change). Update this file if `PUTER.md` formatting, the PWA strategy, or the deployment changes significantly.*
+---
+
+## The move endpoint, for the local model's checklist tool (v0.4.2)
+
+`PUT /api/structure/move` moves one Daily Checklist item to any place in the Daily Checklist, inside its sub-section or into another, in a single write. Before it, the only move was `reorder`, one step inside a sub-section: a long move took a write and a backup per step and could stop partway if `PUTER.md` changed, and reaching another sub-section took a delete and an add, which mints a new ID. The page's arrows still use `reorder`.
+
+### The request
+Body `{ id, section, beforeId, mtimeMs, hash }`. `section` is the target sub-section's bold title exactly as written in `PUTER.md` (`Evening` for `**Evening**`), matched by the same rule as `add`. With `beforeId` the item lands directly before that item, which must be in the target sub-section. With `beforeId` `null` or left out it lands after the target sub-section's last item.
+
+### What is written
+- The moved line is kept byte for byte: its box, text, ID comment and line ending. Its ID does not change, so today's check and hide state follow it and `daily-state.json` is not touched.
+- Every other line keeps its bytes and its order. The file differs from before only in where that one line sits.
+- The target position is worked out after the line is taken out, so `beforeId` and "after the last item" mean the same whether the item starts above the target, below it, or in another sub-section.
+- "After the last item" is `add`'s rule: after the sub-section's last item line, or directly after its header if it has none. A comment line between a header and its first item, like the one under `**Evening**`, therefore stays above the items, and an item never lands below the blank line that closes a sub-section. In a sub-section with no items yet, the item goes directly under the header, above any comment there, as `add` does.
+- One move is one fingerprint check, one backup and one atomic write, whatever the distance.
+- An `id` or `beforeId` matches only a checklist line inside the Daily Checklist whose trailing ID comment has exactly that slug, the same comment the parser reads. An ID comment anywhere else in the file is not a match.
+- Success returns what `text` and `reorder` return: the re-parsed Daily Checklist and the new fingerprint.
+
+### Refusals
+None of these writes the file or makes a backup. Field types are checked first, then the fingerprint, then the file.
+
+| Case | Status |
+|---|---|
+| A body field of the wrong type | 400 |
+| `beforeId` equal to `id` | 400 |
+| The item is already there, so the file would not change | 400, saying so |
+| `id` is not an item of the Daily Checklist | 404 |
+| `section` is not a sub-section of the Daily Checklist | 404 |
+| `beforeId` is not an item of the target sub-section | 404 |
+| The fingerprint does not match | 409 `{ conflict: true, reload: true }` |
+
+The no-change check compares the new content with the old, before the backup. The 400s found in the file come from an `err.badRequest` flag that only the move sets, so the other four structure endpoints answer as they did. Like the other refusals other than 409, they are logged.
+
+*Parser notes: Phase 1 (v0.1.0). PWA notes: Phase 2 (v0.2.0). Daily-state/ID notes: Phase 3 (v0.3.0). Structural-write notes: Phase 3.5 (v0.3.1). Rollover/Goals/This Week notes: Phase 3.6 (v0.3.2). Container/proxy/access notes: Phase 4 (v0.4.0). Line-ending and synced-folder notes: Phase 4 Stage 5 (v0.4.1). Local-model notes: Phase 4 Stage 6 (no app change). Move-endpoint notes: v0.4.2. Update this file if `PUTER.md` formatting, the PWA strategy, or the deployment changes significantly.*

@@ -106,6 +106,31 @@ function findItemLineByID(lines, id) {
   return -1;
 }
 
+// The slug in a line's trailing <!-- id: SLUG --> comment, or null. Only a comment at
+// the end of the line counts, as in the parser, so this is the id the API reports.
+function lineId(line) {
+  const m = line.match(/<!--\s*id:\s*([\w-]+)\s*-->\s*$/);
+  return m ? m[1] : null;
+}
+
+// Find the absolute line index of the checklist item with the given id, searching
+// only lines [from, to). An id comment on a non-item line is not a match.
+function findItemLineInRange(lines, id, from, to) {
+  for (let i = from; i < to; i++) {
+    if (/^- \[[ xX]\]/.test(lines[i].trim()) && lineId(lines[i]) === id) return i;
+  }
+  return -1;
+}
+
+// Find the sub-section header whose bold text matches `section`, searching lines [from, to).
+function findSubsectionHeader(lines, section, from, to) {
+  for (let i = from; i < to; i++) {
+    const m = lines[i].trim().match(/^\*\*(.+?)\*\*$/);
+    if (m && m[1].trim() === section) return i;
+  }
+  return -1;
+}
+
 // Returns all checklist item line indices within the sub-section that contains itemLineIdx.
 // Sub-section boundaries are bold **...** lines within the Daily Checklist section.
 function findSubsectionItemLines(lines, itemLineIdx, sectionStart, sectionEnd) {
@@ -132,7 +157,7 @@ function findSubsectionItemLines(lines, itemLineIdx, sectionStart, sectionEnd) {
 
 // Perform a structural edit on filePath.
 // prevFingerprint: { mtimeMs, hash } captured when the client last loaded the data.
-// op: 'add' | 'text' | 'reorder' | 'delete'
+// op: 'add' | 'text' | 'reorder' | 'delete' | 'move'
 // params: op-specific (see routes in index.js)
 // Returns { newId, fingerprint } on success.
 // Throws { conflict: true } if the file changed since prevFingerprint.
@@ -161,15 +186,7 @@ function performEdit(filePath, prevFingerprint, op, params) {
     case 'add': {
       const { section, text } = params;
 
-      // Find the sub-section header whose bold text matches `section`
-      let subHeaderIdx = -1;
-      for (let i = sectionStart; i < sectionEnd; i++) {
-        const m = lines[i].trim().match(/^\*\*(.+?)\*\*$/);
-        if (m && m[1].trim() === section) {
-          subHeaderIdx = i;
-          break;
-        }
-      }
+      const subHeaderIdx = findSubsectionHeader(lines, section, sectionStart, sectionEnd);
       if (subHeaderIdx === -1) {
         const err = new Error(`Sub-section "${section}" not found in Daily Checklist`);
         err.notFound = true;
@@ -235,6 +252,51 @@ function performEdit(filePath, prevFingerprint, op, params) {
       const lineIdx = findItemLineByID(lines, id);
       if (lineIdx === -1) throw new Error(`Item id "${id}" not found`);
       lines.splice(lineIdx, 1);
+      break;
+    }
+
+    case 'move': {
+      const { id, section, beforeId } = params;
+      const fromIdx = findItemLineInRange(lines, id, sectionStart, sectionEnd);
+      if (fromIdx === -1) {
+        const err = new Error(`Item id "${id}" not found in Daily Checklist`);
+        err.notFound = true;
+        throw err;
+      }
+
+      // Take the line out first, so the target is found without it. The line moves
+      // whole: box, text, id comment and any \r stay as they were.
+      const [moved] = lines.splice(fromIdx, 1);
+      const end = sectionEnd - 1;
+
+      const subHeaderIdx = findSubsectionHeader(lines, section, sectionStart, end);
+      if (subHeaderIdx === -1) {
+        const err = new Error(`Sub-section "${section}" not found in Daily Checklist`);
+        err.notFound = true;
+        throw err;
+      }
+      // Starting from the header itself finds that header's sub-section
+      const { itemLines } = findSubsectionItemLines(lines, subHeaderIdx, sectionStart, end);
+
+      let insertIdx;
+      if (beforeId === null) {
+        // Same rule as add: after the last item, or directly after the header if none
+        insertIdx = itemLines.length ? itemLines[itemLines.length - 1] + 1 : subHeaderIdx + 1;
+      } else {
+        insertIdx = itemLines.find(i => lineId(lines[i]) === beforeId) ?? -1;
+        if (insertIdx === -1) {
+          const err = new Error(`Item id "${beforeId}" not found in sub-section "${section}"`);
+          err.notFound = true;
+          throw err;
+        }
+      }
+
+      lines.splice(insertIdx, 0, moved);
+      if (lines.join('\n') === content) {
+        const err = new Error(`Item "${id}" is already there; the move would not change PUTER.md`);
+        err.badRequest = true;
+        throw err;
+      }
       break;
     }
 

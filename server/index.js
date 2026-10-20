@@ -137,7 +137,7 @@ app.put('/api/state/hide', (req, res) => {
 
 // ---------------------------------------------------------------------------
 // Phase 3.5 — structural editing of Daily Checklist in PUTER.md
-// All four endpoints return the re-parsed Daily Checklist on success,
+// All five endpoints return the re-parsed Daily Checklist on success,
 // or HTTP 409 + { conflict: true, reload: true } if the file changed on disk.
 // ---------------------------------------------------------------------------
 
@@ -166,6 +166,7 @@ function buildDailyResponse(fingerprint) {
 function handleEditError(e, req, res) {
   if (e.conflict) return res.status(409).json({ conflict: true, reload: true });
   logFailure(req, e);
+  if (e.badRequest) return res.status(400).json({ error: e.message });
   if (e.notFound) return res.status(404).json({ error: e.message });
   return res.status(500).json({ error: e.message });
 }
@@ -213,6 +214,28 @@ app.put('/api/structure/reorder', (req, res) => {
   }
   try {
     const result = performEdit(PUTER_MD, fp, 'reorder', { id, direction });
+    res.json(buildDailyResponse(result.fingerprint));
+  } catch (e) {
+    handleEditError(e, req, res);
+  }
+});
+
+// PUT /api/structure/move  body: { id, section, beforeId, mtimeMs, hash }
+// Moves an item directly before beforeId in sub-section `section`, or after its last
+// item when beforeId is null or absent. One write; the item keeps its id.
+app.put('/api/structure/move', (req, res) => {
+  const fp = requireFingerprint(req, res);
+  if (!fp) return;
+  const { id, section, beforeId = null } = req.body;
+  if (typeof id !== 'string' || typeof section !== 'string' ||
+      (beforeId !== null && typeof beforeId !== 'string')) {
+    return res.status(400).json({ error: 'id (string), section (string) and beforeId (string or null) required' });
+  }
+  if (beforeId === id) {
+    return res.status(400).json({ error: 'beforeId must not be the item being moved' });
+  }
+  try {
+    const result = performEdit(PUTER_MD, fp, 'move', { id, section, beforeId });
     res.json(buildDailyResponse(result.fingerprint));
   } catch (e) {
     handleEditError(e, req, res);

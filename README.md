@@ -1,4 +1,4 @@
-# P.U.T.E.R. App — v0.4.1
+# P.U.T.E.R. App — v0.4.2
 
 **P**ersonal **U**tility **T**o **E**nhance **R**elaxation — local dashboard for Jacob Zolda's life-management system, installable as a PWA on the phone.
 
@@ -222,6 +222,7 @@ puter_app/
 | `POST /api/structure/add` | Body `{ section, text, mtimeMs, hash }` — add item; returns `newId` |
 | `PUT /api/structure/text` | Body `{ id, text, mtimeMs, hash }` — edit item text |
 | `PUT /api/structure/reorder` | Body `{ id, direction, mtimeMs, hash }` — move item up or down within its sub-section |
+| `PUT /api/structure/move` | Body `{ id, section, beforeId, mtimeMs, hash }` — move item before `beforeId` in sub-section `section` (or to its end when `beforeId` is null), keeping its ID |
 | `DELETE /api/structure/item` | Body `{ id, mtimeMs, hash }` — delete item and clear its daily state |
 
 Structure endpoints return the re-parsed Daily Checklist + new fingerprint on success, or `409 { conflict: true, reload: true }` if PUTER.md changed on disk since the client last read it.
@@ -237,3 +238,5 @@ Structure endpoints return the re-parsed Daily Checklist + new fingerprint on su
 **v0.4.0** moves the app onto an always-on server (ROADMAP Phase 4, Stages 3–4). It runs in Docker behind an nginx reverse proxy, over HTTPS from a private certificate authority, published only on a private tunnel address. No new features. The move surfaced a set of fixes: the open cross-origin header is gone; the state folder is created when missing; a structural edit that fails to save now says so on the page and in the server log, as does a failed load of the day's check state; the version comes from `package.json` alone; the startup banner prints the configured address (`PUTER_URL`); the offline message no longer asks about the PC and Wi-Fi; and `concurrently` is a dev dependency, so it no longer ships in the image.
 
 **v0.4.1** makes the parser accept Windows (CRLF) line endings and a leading byte-order mark in `PUTER.md`, as well as Unix (LF) endings. Before this, a file saved with Windows endings loaded as an empty dashboard. The fix came with ROADMAP Phase 4 Stage 5, where the P.U.T.E.R. folder left OneDrive for a folder that Syncthing keeps in step between the server, the PC and the phone. The structure-edit endpoints already kept whichever ending a file used. No new features. `proxy-addr` moves to 2.0.8 in the lockfile.
+
+**v0.4.2** adds `PUT /api/structure/move`, which moves a Daily Checklist item to any place in the Daily Checklist, inside its sub-section or into another, in one write and one backup. The moved line is kept byte for byte, so its ID and today's check and hide state go with it. Before this, a long move took one `reorder` step per place, and a move into another sub-section took a delete and an add, which changed the ID. It is there for the local model's checklist tool. The page's arrows still use `reorder`. A move that would leave the file unchanged is refused with a 400. No other change.

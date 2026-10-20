@@ -1,7 +1,7 @@
 # P.U.T.E.R. — Software Roadmap
 ### From living document to conversational system
 **Operator:** Jacob Zolda
-**Version:** 0.10
+**Version:** 0.11
 **Status:** Living document
 
 ---
@@ -21,7 +21,7 @@ It complements the system and data files without duplicating them:
 
 P.U.T.E.R. now has two independent version numbers:
 
-- **Document version** — `PUTER.md` (currently v0.8.5). Tracks the system's rules and structure.
+- **Document version** — `PUTER.md` (currently v0.8.6). Tracks the system's rules and structure.
 - **Software version** — the app. Stays **v0.x** until it reaches **v1**.
 
 **v1 is earned, not assigned.** The app is v1 only when it is **conversational, running on a local model, on the always-on machine.** Everything before that — dashboard, capture, reminders, even Claude wired in as an assist — is foundation, and stays v0.x.
@@ -81,7 +81,7 @@ So they are never an expensive retrofit:
 
 ### Phase 3 — Write-enabled checklist state (check / hide)
 - **Goal:** P.U.T.E.R. becomes usable, not just a viewer.
-- **Scope:** Check/uncheck Daily Checklist items and hide items today-only, from PC or phone, sharing one backend. **Path B:** the app owns a separate daily-state file; PUTER.md becomes a template (boxes always `[ ]`, items carry stable `<!-- id: -->` tags) and is never written by the app. State resets daily at a 4am rollover; hide is today-only; a "Manage" mode reveals and un-hides. No daily-log writes (logs stay in Bear → OneDrive). No SQLite. No offline write-queue.
+- **Scope:** Check/uncheck Daily Checklist items and hide items today-only, from PC or phone, sharing one backend. **Path B:** the app owns a separate daily-state file; PUTER.md becomes a template (boxes always `[ ]`, items carry stable `<!-- id: -->` tags) and is never written by the app. State resets daily at a 4am rollover; hide is today-only; a "Manage" mode reveals and un-hides. No daily-log writes (logs stay in Bear and are exported into the P.U.T.E.R. folder). No SQLite. No offline write-queue.
 - **Done when:** Jacob can run his whole Daily Checklist in the app — check, hide, reveal, un-hide — with PUTER.md untouched and state auto-clearing each day.
 
 ### Phase 3.5 — Structural editing of PUTER.md ✓ done (v0.3.1)
@@ -122,6 +122,7 @@ Current build status lives in the latest entry of `PUTER_APP_BUILD_LOG.md` — t
 ---
 
 ## Changelog
+- **v0.11** — App v0.4.2 adds a move endpoint for the Daily Checklist (`PUT /api/structure/move`), for the local model's checklist tool: one write moves an item to any place in the Daily Checklist, into another sub-section too, with its ID kept. Two corrections: the document version now reads v0.8.6, and Phase 3's scope says the logs are exported from Bear into the P.U.T.E.R. folder rather than going to OneDrive. No PUTER.md change. Details in `PUTER_APP_BUILD_LOG.md`.
 - **v0.10** — Phase 4 Stage 6 complete (no app code change; app version unchanged). The stopgap's GTX 970M runs on the NVIDIA 580 driver with Secure Boot still on, and Ollama serves a local model, `gemma4:e2b`, in a third container: reachable through the tunnel only, cloud features off, answering the Anthropic Messages API on the GPU from the PC and from the app's container. The model was chosen from six candidates by measurement and Jacob's own prompts. llama.cpp is planned for the dedicated machine. Settled decision 4, the tech stack and the stopgap host line updated. CPU turbo is off on the stopgap so sustained model work does not throttle it. No PUTER.md change. Details in `PUTER_APP_BUILD_LOG.md`.
 - **v0.9** — Phase 4 Stage 5 complete (app v0.4.1). The P.U.T.E.R. folder left OneDrive: Syncthing now keeps it in step between the server, the PC and the iPhone, with a year of old versions kept on the server. Settled decision 6 reworded from a plan to the current state. Sync added to the tech stack. A packet rule on the server closes the home-network gap noted at Stage 4. App v0.4.1 accepts Windows line endings in PUTER.md. PUTER.md → v0.8.5. Details in `PUTER_APP_BUILD_LOG.md`.
 - **v0.8** — Phase 4 Stages 3–4 complete (app v0.4.0). The app runs in Docker on the stopgap server, behind an nginx reverse proxy, published on the address of a self-hosted WireGuard tunnel, over HTTPS from a private certificate authority. New settled decision 7 (private by network). Hosting and remote access added to the tech stack. No PUTER.md change. Details in `PUTER_APP_BUILD_LOG.md`.
