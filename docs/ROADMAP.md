@@ -1,7 +1,7 @@
 # P.U.T.E.R. — Software Roadmap
 ### From living document to conversational system
 **Operator:** Jacob Zolda
-**Version:** 0.11
+**Version:** 0.12
 **Status:** Living document
 
 ---
@@ -89,7 +89,7 @@ So they are never an expensive retrofit:
 - **Scope:** Reorder checklist items, add a new item, edit an item's text, delete an item — written safely back to PUTER.md. Surgical edits only (target line by ID, every other byte identical). Optimistic concurrency via mtime+hash fingerprint; atomic write with timestamped backups. This Week write-enabling deferred to Phase 4.5.
 - **Done when:** Jacob can reshape the Daily Checklist from the app without opening VS Code. ✓
 
-### Phase 4 — Always-on box + self-hosted sync
+### Phase 4 — Always-on box + self-hosted sync ✓ done
 - **Goal:** Always available, privacy-first. *(Runs first on a stopgap laptop server; cross-ref **SRV**. The dedicated build stays with **PCB** / **FIN**.)*
 - **Scope:** Stand up the always-on machine. Move the app onto it (served 24/7, reachable anywhere). Migrate sync from OneDrive to Syncthing.
 - **Stopgap host:** MSI GE72 2QF laptop, headless, running Ubuntu Server 26.04 LTS on the GA kernel. Docker and Syncthing are chosen to transfer 1:1 to the dedicated machine. The model runner changes from Ollama to llama.cpp there; both serve the same API, so the move changes an address, not the app.
@@ -100,8 +100,8 @@ So they are never an expensive retrofit:
   4. Remote access + reverse proxy ✓
   5. Syncthing + OneDrive migration ✓
   6. Ollama + NVIDIA drivers ✓
-  7. Monitoring
-- **Done when:** Every device reaches P.U.T.E.R. from anywhere, and sensitive data is self-hosted.
+  7. Monitoring ✓
+- **Done when:** Every device reaches P.U.T.E.R. from anywhere, and sensitive data is self-hosted. ✓
 
 ### Phase 4.5 — Write-enabled This Week
 - **Goal:** Run the week from the app, not just view it.
@@ -122,6 +122,7 @@ Current build status lives in the latest entry of `PUTER_APP_BUILD_LOG.md` — t
 ---
 
 ## Changelog
+- **v0.12** — Phase 4 Stage 7 complete, and with it Phase 4 (no app code change; app version unchanged). The server has a health page with history (Beszel at `health.`), alerts on Jacob's phone through his own ntfy, an outside watcher (healthchecks.io) for the server going quiet, and a monitor script that checks the server every minute and sends a morning report at 08:00. The drive's head parking was stopped (APM 254). Details in `PUTER_APP_BUILD_LOG.md`.
 - **v0.11** — App v0.4.2 adds a move endpoint for the Daily Checklist (`PUT /api/structure/move`), for the local model's checklist tool: one write moves an item to any place in the Daily Checklist, into another sub-section too, with its ID kept. Two corrections: the document version now reads v0.8.6, and Phase 3's scope says the logs are exported from Bear into the P.U.T.E.R. folder rather than going to OneDrive. No PUTER.md change. Details in `PUTER_APP_BUILD_LOG.md`.
 - **v0.10** — Phase 4 Stage 6 complete (no app code change; app version unchanged). The stopgap's GTX 970M runs on the NVIDIA 580 driver with Secure Boot still on, and Ollama serves a local model, `gemma4:e2b`, in a third container: reachable through the tunnel only, cloud features off, answering the Anthropic Messages API on the GPU from the PC and from the app's container. The model was chosen from six candidates by measurement and Jacob's own prompts. llama.cpp is planned for the dedicated machine. Settled decision 4, the tech stack and the stopgap host line updated. CPU turbo is off on the stopgap so sustained model work does not throttle it. No PUTER.md change. Details in `PUTER_APP_BUILD_LOG.md`.
 - **v0.9** — Phase 4 Stage 5 complete (app v0.4.1). The P.U.T.E.R. folder left OneDrive: Syncthing now keeps it in step between the server, the PC and the iPhone, with a year of old versions kept on the server. Settled decision 6 reworded from a plan to the current state. Sync added to the tech stack. A packet rule on the server closes the home-network gap noted at Stage 4. App v0.4.1 accepts Windows line endings in PUTER.md. PUTER.md → v0.8.5. Details in `PUTER_APP_BUILD_LOG.md`.
